@@ -1,0 +1,11 @@
+{
+  "//": "Deteccao de duplicacao da RQ3 - equivalente ao PMD CPD para TypeScript.",
+  "//minTokens": "As katas sao pequenas (30-50 LOC). O default de 50 tokens do jscpd nunca dispararia; 25 detecta o bloco duplicado tipico de codigo gerado sem refatorar.",
+  "minTokens": 25,
+  "minLines": 3,
+  "format": ["typescript"],
+  "reporters": ["json"],
+  "absolute": true,
+  "gitignore": false,
+  "ignore": ["**/node_modules/**", "**/test/**", "**/*.test.ts"]
+}

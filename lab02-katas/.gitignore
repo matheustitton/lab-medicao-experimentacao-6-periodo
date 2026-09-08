@@ -1,0 +1,10 @@
+# Dependencias
+node_modules/
+
+# Artefatos de execucao das katas e dos trials
+reports/
+.jscpd/
+
+# Solucoes de referencia: NUNCA entram no repositorio antes da S02.
+# Ver docs/desenho-experimento.md, ameaca a validade #5.
+solucoes-referencia/
