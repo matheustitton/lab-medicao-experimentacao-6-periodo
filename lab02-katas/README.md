@@ -124,23 +124,97 @@ CSV temporário — não encosta no `data/trials.csv`.
 
 ## Métricas estáticas da RQ3
 
-Comandos já verificados nas soluções de referência. Falta empacotá-los no
-`scripts/run_metrics.ps1` (Issue S01-C):
+`run_metrics.ps1` mede o código final de cada trial e produz as três variáveis da RQ3:
+**complexidade ciclomática**, **duplicação** e **LOC** (controle obrigatório).
 
 ```powershell
-# Complexidade ciclomatica (McCabe) por funcao - substitui o CK/Radon, ver desenho
-npx eslint --config eslint.complexity.config.mjs --no-config-lookup --format json "<dir>/**/src/*.ts"
-# cada mensagem: "Function 'nome' has a complexity of N. Maximum allowed is 0."
-
-# Duplicacao - substitui o PMD CPD
-npx jscpd <dir> --min-tokens 25 --min-lines 3 --format typescript --reporters json --output <saida>
-# statistics.total.percentage = % de linhas duplicadas
+.\scripts\run_metrics.ps1 -Trial trials\p1\kata-01-faixas-ia   # um trial
+.\scripts\run_metrics.ps1 -Todos                                # varre trials\ inteiro
+.\scripts\run_metrics.ps1 -Trial katas\kata-01-faixas           # qualquer pasta com src\
 ```
 
-Por que não CK nem PMD: o CK só analisa Java, e a linguagem escolhida foi TypeScript. O enunciado
-admite ferramenta equivalente nesse caso. O `ts-complex` (o análogo mais próximo do Radon) foi
-testado e **descartado por medir errado** — detalhes em
-[docs/desenho-experimento.md](docs/desenho-experimento.md), seção "Ferramentas da RQ3".
+Mede apenas o que está em `src/`; a suíte de aceitação em `test/` fica de fora (`.jscpd.json`).
+
+### `data/metrics.csv` — uma linha por trial
+
+| Coluna | Conteúdo |
+|---|---|
+| `trial_id` | `<integrante>-<kata>-<tratamento>` — **mesma chave do `data/trials.csv`**, para a S03 juntar os dois com um merge |
+| `integrante`, `kata`, `tratamento` | derivados do caminho do trial |
+| `arquivos` | nº de arquivos `.ts` medidos |
+| `loc` | linhas não vazias e não comentadas — **métrica de controle obrigatória** |
+| `n_funcoes` | quantas funções o ESLint encontrou |
+| `cc_max` | maior complexidade ciclomática entre as funções |
+| `cc_soma` | soma das complexidades |
+| `cc_media` | média por função |
+| `cc_max_por_loc`, `cc_soma_por_loc` | complexidade normalizada por LOC |
+| `linhas_analisadas` | linhas que o jscpd considerou |
+| `linhas_duplicadas`, `pct_duplicado` | duplicação dentro do código daquele trial |
+
+**Por que quatro variantes de complexidade.** O ESLint conta cada callback de `.filter()`/`.map()`
+como uma função. Uma solução escrita com array methods ganha média por função artificialmente baixa;
+a mesma solução escrita com laço, alta. Como código gerado por IA tende a usar mais array methods,
+usar só `cc_media` produziria um resultado de RQ3 que mede **estilo**, não complexidade. Por isso
+`cc_max` e `cc_soma` saem junto, e a comparação entre tratamentos é feita normalizada por LOC.
+Detalhes em [docs/desenho-experimento.md](docs/desenho-experimento.md), seção "Ferramentas da RQ3".
+
+### `data/metrics_duplicacao_pool.csv` — métrica exploratória
+
+Gerado por `-Todos`. Numa kata de ~25 linhas, o jscpd sobre um arquivo isolado dá 0% em quase todo
+trial — a coluna `pct_duplicado` de `metrics.csv` tende a ser toda zero, e metade da RQ3 ficaria sem
+sinal.
+
+Este segundo CSV roda o jscpd sobre o **pool de trials da mesma `(kata, tratamento)`**, ou seja,
+compara as soluções dos três integrantes entre si:
+
+| Coluna | Conteúdo |
+|---|---|
+| `kata`, `tratamento` | o bloco medido |
+| `n_trials` | quantas soluções entraram no pool |
+| `linhas_analisadas`, `linhas_duplicadas`, `pct_duplicado` | duplicação dentro do pool |
+| `clones` | nº de trechos clonados encontrados |
+
+Se o pool `IA` for muito mais duplicado que o `MANUAL`, o achado é **"o assistente entrega
+praticamente a mesma solução para todo mundo"** — relevante para a discussão da ameaça #1
+(memorização). É uma métrica **exploratória**: a primária da RQ3 continua sendo o `pct_duplicado`
+por trial.
+
+### Autoteste
+
+```powershell
+.\scripts\test_run_metrics.ps1
+```
+
+25 verificações sobre código sintético com valores **contados à mão**: uma função com 4 ramos tem que
+dar `cc_max = 5`; um arquivo de 9 linhas tem que dar `loc = 9`; dois corpos idênticos têm que acusar
+duplicação; o CSV tem que sair sem BOM e com 15 campos por linha. Se uma atualização de ferramenta
+mudar o comportamento, o autoteste acusa antes de a S02 gerar dados errados.
+
+### Por que não CK nem PMD
+
+O CK só analisa Java, e a linguagem escolhida foi TypeScript. O enunciado admite ferramenta
+equivalente nesse caso.
+
+| Métrica | Ferramenta | Substitui |
+|---|---|---|
+| Complexidade ciclomática (McCabe) | ESLint, regra `complexity` | `CK wmc` / `radon cc` |
+| Duplicação | jscpd, `--min-tokens 25` | PMD CPD |
+| LOC | contagem própria | métrica de controle |
+
+O `ts-complex` (o análogo mais próximo do Radon) foi testado e **descartado por medir errado** —
+detalhes em [docs/desenho-experimento.md](docs/desenho-experimento.md), seção "Ferramentas da RQ3".
+
+### Nota sobre CSV no PowerShell 5.1
+
+Os dois CSVs são gravados via `[System.IO.File]::WriteAllLines` com `UTF8Encoding($false)`, e os
+números via `CultureInfo::InvariantCulture`. Não é preciosismo:
+
+- `Set-Content -Encoding utf8` grava **BOM**, e o `pandas.read_csv` passa a ler a primeira coluna
+  como `﻿trial_id` — `KeyError` obscuro no dashboard da S03.
+- Em máquina com locale pt-BR, `"$([Math]::Round(0.5,4))"` vira `"0,5"`, e a vírgula **quebra a linha
+  do CSV em colunas extras**, corrompendo o dataset em silêncio.
+
+Quem for escrever outro script que gere CSV neste projeto: use os mesmos dois cuidados.
 
 ## Contrabalanceamento dos trials
 
@@ -171,7 +245,7 @@ docs/       desenho do experimento e catálogo das katas
 katas/      os 6 objetos experimentais (enunciado + esqueleto + suíte)
 scripts/    setup do ambiente e execução das suítes
 trials/     workspace de cada trial, um por kata/tratamento (preenchido na S02)
-data/       trials.csv (registro dos trials) e junit/ (XML de cada trial, evidência bruta)
+data/       trials.csv (RQ1/RQ2), metrics.csv (RQ3) e junit/ (XML de cada trial, evidência bruta)
 ```
 
 ## Documentação
