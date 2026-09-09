@@ -151,10 +151,20 @@ $junitArquivo = Join-Path $root "data\junit\$trialId.xml"
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $junitArquivo) | Out-Null
 if (Test-Path $junitFile) { Copy-Item $junitFile $junitArquivo -Force }
 
+# Formata numero com PONTO decimal, independente do locale. Em pt-BR,
+# "$([Math]::Round(0.5,4))" vira "0,5" e a virgula quebra o CSV em colunas
+# extras -- corrompendo silenciosamente o dataset da RQ2.
+function Num {
+    param($Valor)
+    return [System.Convert]::ToDouble($Valor).ToString([System.Globalization.CultureInfo]::InvariantCulture)
+}
+
+# UTF-8 sem BOM: no PowerShell 5.1, Set-Content -Encoding utf8 grava BOM, e o
+# pandas passa a ler a primeira coluna como "﻿trial_id" na S03.
 $cabecalho = 'trial_id,integrante,kata,tratamento,ordem,inicio_iso,fim_iso,time_to_green_s,censurado,testes_total,testes_passando,taxa_sucesso,n_prompts,observacoes'
 if (-not (Test-Path $CsvPath)) {
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $CsvPath) | Out-Null
-    Set-Content -Path $CsvPath -Value $cabecalho -Encoding utf8
+    [System.IO.File]::WriteAllLines($CsvPath, [string[]]@($cabecalho), (New-Object System.Text.UTF8Encoding $false))
 }
 
 $linha = @(
@@ -169,11 +179,11 @@ $linha = @(
     $(if ($censurado) { 'true' } else { 'false' })
     $testesTotal
     $testesPassando
-    $taxa
+    (Num $taxa)
     $(if ($Prompts -ge 0) { $Prompts } else { '' })
     ('"' + ($Observacoes -replace '"', '""') + '"')
 ) -join ','
-Add-Content -Path $CsvPath -Value $linha -Encoding utf8
+[System.IO.File]::AppendAllLines($CsvPath, [string[]]@($linha), (New-Object System.Text.UTF8Encoding $false))
 
 # --- 5. Resumo ----------------------------------------------------------------
 Write-Host ''
