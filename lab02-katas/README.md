@@ -56,6 +56,72 @@ escrita não pode aparecer com 100% de sucesso.
 > suíte no stderr, e no PowerShell 5.1 capturar stderr de executável nativo empacota cada linha em
 > `ErrorRecord` e corrompe o código de saída — o cronômetro passaria a ler `exit` errado.
 
+## Cronometragem dos trials
+
+`run_trial.ps1` é o que transforma "rodar uma kata" em "executar um trial registrado". Ele produz a
+variável dependente primária da RQ1 — o *time-to-green*.
+
+```powershell
+.\scripts\run_trial.ps1 -Integrante p1 -Kata kata-04-romanos -Tratamento IA -Ordem 4
+```
+
+| Parâmetro | |
+|---|---|
+| `-Integrante` | `p1`, `p2`, `p3` — quem está resolvendo |
+| `-Kata` | nome da pasta em `katas/` |
+| `-Tratamento` | `IA` ou `MANUAL` |
+| `-Ordem` | posição do trial na sequência do integrante (ver contrabalanceamento) |
+| `-TimeBoxSegundos` | default `2100` (35 min). **Só pode ser reduzido** — o script recusa valor maior |
+| `-IntervaloSegundos` | de quanto em quanto tempo verifica, default `5` |
+| `-Prompts` | nº de interações com o Claude; opcional, pode ser preenchido no CSV depois |
+| `-Observacoes` | texto livre |
+
+O que ele faz:
+
+1. Cria o workspace do trial em `trials/<integrante>/<kata>-<tratamento>/`, com cópia nova de `src/`,
+   `test/` e do enunciado. **Você edita só `src/`.** A kata-fonte nunca é tocada.
+2. Cronometra, reexecutando a suíte **a cada mudança em `src/`** — não em laço cego, para não
+   competir por CPU com você durante os 35 minutos.
+3. Encerra no primeiro verde, ou no estouro do time-box.
+4. Grava uma linha em `data/trials.csv` e arquiva o XML final em `data/junit/<trial_id>.xml`.
+
+### Regra de censura
+
+Trial que atinge o time-box sem passar em todos os testes é registrado com
+`censurado = true` e `time_to_green_s = <time-box>` — **e nunca descartado**. Descartar os fracassos
+enviesaria a comparação a favor do tratamento que falha mais. É o que o enunciado do Lab02 exige.
+
+Se o `run_tests.ps1` sair com **3** (ambiente quebrado, nenhum teste executado), o trial é **abortado
+sem gravar linha**: defeito de infraestrutura não pode virar "0% de sucesso" na RQ2.
+
+### Formato de saída — `data/trials.csv`
+
+| Coluna | Conteúdo |
+|---|---|
+| `trial_id` | `<integrante>-<kata>-<tratamento>`, também o nome do XML em `data/junit/` |
+| `integrante` | `p1` / `p2` / `p3` |
+| `kata` | pasta da kata |
+| `tratamento` | `IA` / `MANUAL` |
+| `ordem` | posição na sequência do integrante |
+| `inicio_iso`, `fim_iso` | timestamps ISO 8601 |
+| `time_to_green_s` | **RQ1** — segundos até o primeiro verde, ou o time-box se censurado |
+| `censurado` | `true` / `false` |
+| `testes_total` | nº de testes da suíte (12 em todas as katas) |
+| `testes_passando` | `tests − failures − errors` do XML |
+| `taxa_sucesso` | **RQ2** — `testes_passando / testes_total` |
+| `n_prompts` | métrica exploratória da RQ1; vazio quando não informado |
+| `observacoes` | texto livre, entre aspas |
+
+### Autoteste
+
+```powershell
+.\scripts\test_run_trial.ps1
+```
+
+Verifica os três comportamentos que, se quebrarem, corrompem os dados do experimento: censura no
+time-box, trial verde, e ambiente quebrado não virando dado. Sai com `0` se tudo passar. Escreve num
+CSV temporário — não encosta no `data/trials.csv`.
+
 ## Métricas estáticas da RQ3
 
 Comandos já verificados nas soluções de referência. Falta empacotá-los no
@@ -104,8 +170,8 @@ e o tempo é registrado como **censurado em 2100 s** — nunca descartado.
 docs/       desenho do experimento e catálogo das katas
 katas/      os 6 objetos experimentais (enunciado + esqueleto + suíte)
 scripts/    setup do ambiente e execução das suítes
-trials/     workspace de cada trial (preenchido na S02)
-data/       CSVs de resultado (preenchido na S02)
+trials/     workspace de cada trial, um por kata/tratamento (preenchido na S02)
+data/       trials.csv (registro dos trials) e junit/ (XML de cada trial, evidência bruta)
 ```
 
 ## Documentação
