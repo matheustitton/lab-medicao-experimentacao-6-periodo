@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="12" failures="0" errors="0" time="1.151">
+  <testsuite name="alcance da rainha com obstaculos" errors="0" failures="0" skipped="0" timestamp="2026-09-16T22:39:41" time="0.614" tests="12">
+    <testcase classname="alcance da rainha com obstaculos tabuleiro 1x1 nao tem para onde mover" name="alcance da rainha com obstaculos tabuleiro 1x1 nao tem para onde mover" time="0.004">
+    </testcase>
+    <testcase classname="alcance da rainha com obstaculos centro de um 3x3 livre alcanca todas as outras casas" name="alcance da rainha com obstaculos centro de um 3x3 livre alcanca todas as outras casas" time="0.001">
+    </testcase>
+    <testcase classname="alcance da rainha com obstaculos canto de um 3x3 livre" name="alcance da rainha com obstaculos canto de um 3x3 livre" time="0.001">
+    </testcase>
+    <testcase classname="alcance da rainha com obstaculos tabuleiro de uma linha vira movimento so na horizontal" name="alcance da rainha com obstaculos tabuleiro de uma linha vira movimento so na horizontal" time="0">
+    </testcase>
+    <testcase classname="alcance da rainha com obstaculos tabuleiro de uma coluna vira movimento so na vertical" name="alcance da rainha com obstaculos tabuleiro de uma coluna vira movimento so na vertical" time="0.001">
+    </testcase>
+    <testcase classname="alcance da rainha com obstaculos uma pedra remove a casa dela do alcance" name="alcance da rainha com obstaculos uma pedra remove a casa dela do alcance" time="0">
+    </testcase>
+    <testcase classname="alcance da rainha com obstaculos a pedra bloqueia tambem tudo o que esta atras dela" name="alcance da rainha com obstaculos a pedra bloqueia tambem tudo o que esta atras dela" time="0">
+    </testcase>
+    <testcase classname="alcance da rainha com obstaculos pedra distante corta so o que vem depois dela" name="alcance da rainha com obstaculos pedra distante corta so o que vem depois dela" time="0.001">
+    </testcase>
+    <testcase classname="alcance da rainha com obstaculos pedras repetidas na lista nao mudam o resultado" name="alcance da rainha com obstaculos pedras repetidas na lista nao mudam o resultado" time="0">
+    </testcase>
+    <testcase classname="alcance da rainha com obstaculos pedra na casa da propria rainha e ignorada" name="alcance da rainha com obstaculos pedra na casa da propria rainha e ignorada" time="0.001">
+    </testcase>
+    <testcase classname="alcance da rainha com obstaculos pedra fora do tabuleiro e ignorada" name="alcance da rainha com obstaculos pedra fora do tabuleiro e ignorada" time="0">
+    </testcase>
+    <testcase classname="alcance da rainha com obstaculos rainha cercada por pedras nao alcanca nada" name="alcance da rainha com obstaculos rainha cercada por pedras nao alcanca nada" time="0">
+    </testcase>
+  </testsuite>
+</testsuites>
