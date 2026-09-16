@@ -1,3 +1,4 @@
 ﻿trial_id,integrante,kata,tratamento,ordem,inicio_iso,fim_iso,time_to_green_s,censurado,testes_total,testes_passando,taxa_sucesso,n_prompts,observacoes
 p1-kata-01-faixas-ia,p1,kata-01-faixas,IA,1,2026-09-15T22:08:04,2026-09-15T22:08:55,50,false,12,12,1,1,""
 p1-kata-02-espiral-manual,p1,kata-02-espiral,MANUAL,2,2026-09-15T22:54:06,2026-09-15T23:02:02,476,false,12,12,1,,""
+p1-kata-03-duracao-ia,p1,kata-03-duracao,IA,3,2026-09-16T18:25:33,2026-09-16T18:26:20,47,false,12,12,1,1,""
