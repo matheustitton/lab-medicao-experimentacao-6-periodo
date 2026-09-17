@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="12" failures="0" errors="0" time="0.778">
+  <testsuite name="compressor de faixas" errors="0" failures="0" skipped="0" timestamp="2026-09-16T01:08:54" time="0.472" tests="12">
+    <testcase classname="compressor de faixas entrada vazia produz string vazia" name="compressor de faixas entrada vazia produz string vazia" time="0.004">
+    </testcase>
+    <testcase classname="compressor de faixas um unico valor e escrito sozinho" name="compressor de faixas um unico valor e escrito sozinho" time="0">
+    </testcase>
+    <testcase classname="compressor de faixas valores isolados sao separados por virgula" name="compressor de faixas valores isolados sao separados por virgula" time="0.001">
+    </testcase>
+    <testcase classname="compressor de faixas tres consecutivos viram faixa" name="compressor de faixas tres consecutivos viram faixa" time="0">
+    </testcase>
+    <testcase classname="compressor de faixas dois consecutivos nao viram faixa" name="compressor de faixas dois consecutivos nao viram faixa" time="0.001">
+    </testcase>
+    <testcase classname="compressor de faixas faixas e valores isolados se misturam na mesma saida" name="compressor de faixas faixas e valores isolados se misturam na mesma saida" time="0">
+    </testcase>
+    <testcase classname="compressor de faixas valores repetidos sao colapsados em um so" name="compressor de faixas valores repetidos sao colapsados em um so" time="0">
+    </testcase>
+    <testcase classname="compressor de faixas repeticao no meio de uma sequencia nao quebra a faixa" name="compressor de faixas repeticao no meio de uma sequencia nao quebra a faixa" time="0.001">
+    </testcase>
+    <testcase classname="compressor de faixas faixa inteiramente negativa" name="compressor de faixas faixa inteiramente negativa" time="0">
+    </testcase>
+    <testcase classname="compressor de faixas faixa que atravessa o zero" name="compressor de faixas faixa que atravessa o zero" time="0">
+    </testcase>
+    <testcase classname="compressor de faixas entrada inteira e uma unica faixa" name="compressor de faixas entrada inteira e uma unica faixa" time="0">
+    </testcase>
+    <testcase classname="compressor de faixas duas faixas separadas por um buraco de um valor" name="compressor de faixas duas faixas separadas por um buraco de um valor" time="0">
+    </testcase>
+  </testsuite>
+</testsuites>

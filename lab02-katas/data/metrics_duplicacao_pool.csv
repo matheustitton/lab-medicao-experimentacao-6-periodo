@@ -1,0 +1,7 @@
+kata,tratamento,n_trials,linhas_analisadas,linhas_duplicadas,pct_duplicado,clones
+kata-01-faixas,IA,1,35,0,0,0
+kata-02-espiral,MANUAL,1,46,0,0,0
+kata-03-duracao,IA,1,43,0,0,0
+kata-04-romanos,MANUAL,1,61,0,0,0
+kata-05-rainha,IA,1,52,0,0,0
+kata-06-delimitadores,MANUAL,1,40,0,0,0

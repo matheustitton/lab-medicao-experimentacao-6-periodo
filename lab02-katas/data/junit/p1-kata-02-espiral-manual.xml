@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="12" failures="0" errors="0" time="0.73">
+  <testsuite name="leitura em espiral anti-horaria" errors="0" failures="0" skipped="0" timestamp="2026-09-16T02:02:01" time="0.417" tests="12">
+    <testcase classname="leitura em espiral anti-horaria matriz vazia produz array vazio" name="leitura em espiral anti-horaria matriz vazia produz array vazio" time="0.005">
+    </testcase>
+    <testcase classname="leitura em espiral anti-horaria matriz 1x1 produz o unico elemento" name="leitura em espiral anti-horaria matriz 1x1 produz o unico elemento" time="0">
+    </testcase>
+    <testcase classname="leitura em espiral anti-horaria matriz 2x2" name="leitura em espiral anti-horaria matriz 2x2" time="0.001">
+    </testcase>
+    <testcase classname="leitura em espiral anti-horaria matriz 3x3 termina no centro" name="leitura em espiral anti-horaria matriz 3x3 termina no centro" time="0">
+    </testcase>
+    <testcase classname="leitura em espiral anti-horaria matriz de uma linha vira varredura simples" name="leitura em espiral anti-horaria matriz de uma linha vira varredura simples" time="0">
+    </testcase>
+    <testcase classname="leitura em espiral anti-horaria matriz de uma coluna vira varredura simples" name="leitura em espiral anti-horaria matriz de uma coluna vira varredura simples" time="0">
+    </testcase>
+    <testcase classname="leitura em espiral anti-horaria matriz retangular mais larga que alta (2x4)" name="leitura em espiral anti-horaria matriz retangular mais larga que alta (2x4)" time="0">
+    </testcase>
+    <testcase classname="leitura em espiral anti-horaria matriz retangular mais alta que larga (4x2)" name="leitura em espiral anti-horaria matriz retangular mais alta que larga (4x2)" time="0.001">
+    </testcase>
+    <testcase classname="leitura em espiral anti-horaria matriz 4x4 com anel interno completo" name="leitura em espiral anti-horaria matriz 4x4 com anel interno completo" time="0">
+    </testcase>
+    <testcase classname="leitura em espiral anti-horaria matriz 3x4 com anel interno de uma linha" name="leitura em espiral anti-horaria matriz 3x4 com anel interno de uma linha" time="0">
+    </testcase>
+    <testcase classname="leitura em espiral anti-horaria matriz 5x3 com anel interno de uma coluna" name="leitura em espiral anti-horaria matriz 5x3 com anel interno de uma coluna" time="0">
+    </testcase>
+    <testcase classname="leitura em espiral anti-horaria valores repetidos e negativos nao alteram a ordem do percurso" name="leitura em espiral anti-horaria valores repetidos e negativos nao alteram a ordem do percurso" time="0.001">
+    </testcase>
+  </testsuite>
+</testsuites>

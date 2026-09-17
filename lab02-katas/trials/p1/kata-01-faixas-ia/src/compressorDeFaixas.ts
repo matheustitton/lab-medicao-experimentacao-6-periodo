@@ -3,33 +3,33 @@
  * Nao altere a assinatura exportada: a suite de aceitacao depende dela.
  */
 export function comprimir(valores: number[]): string {
-  if (valores.length === 0) return "";
+  // Regra 3: como a entrada é não decrescente, basta remover repetições adjacentes.
+  const unicos = valores.filter((v, i) => i === 0 || v !== valores[i - 1]);
 
-  const unicos = [...new Set(valores)];
-  const resultado: string[] = [];
+  const partes: string[] = [];
+  let inicio = 0;
 
-  let inicio = unicos[0];
-  let fim = inicio;
-
-  for (let i = 1; i <= unicos.length; i++) {
-    const atual = unicos[i];
-
-    if (atual === fim + 1) {
-      fim = atual;
-      continue;
+  while (inicio < unicos.length) {
+    // Avança enquanto o próximo valor for exatamente o atual + 1.
+    let fim = inicio;
+    while (fim + 1 < unicos.length && unicos[fim + 1] === unicos[fim] + 1) {
+      fim++;
     }
 
-    if (fim - inicio >= 2) {
-      resultado.push(`${inicio}..${fim}`);
-    } else if (fim === inicio) {
-      resultado.push(`${inicio}`);
+    const tamanho = fim - inicio + 1;
+    if (tamanho >= 3) {
+      // Regra 1: 3 ou mais consecutivos viram "primeiro..ultimo".
+      partes.push(`${unicos[inicio]}..${unicos[fim]}`);
     } else {
-      resultado.push(`${inicio}`, `${fim}`);
+      // Regra 2: 1 ou 2 valores são escritos um a um.
+      for (let k = inicio; k <= fim; k++) {
+        partes.push(String(unicos[k]));
+      }
     }
 
-    inicio = atual;
-    fim = atual;
+    inicio = fim + 1;
   }
 
-  return resultado.join(",");
+  // Regra 4: entrada vazia resulta em "" naturalmente.
+  return partes.join(",");
 }
