@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="12" failures="0" errors="0" time="0.707">
+  <testsuite name="delimitadores balanceados com literais" errors="0" failures="0" skipped="0" timestamp="2026-09-17T00:50:18" time="0.4" tests="12">
+    <testcase classname="delimitadores balanceados com literais texto vazio e valido" name="delimitadores balanceados com literais texto vazio e valido" time="0.002">
+    </testcase>
+    <testcase classname="delimitadores balanceados com literais par simples" name="delimitadores balanceados com literais par simples" time="0">
+    </testcase>
+    <testcase classname="delimitadores balanceados com literais os tres tipos aninhados" name="delimitadores balanceados com literais os tres tipos aninhados" time="0">
+    </testcase>
+    <testcase classname="delimitadores balanceados com literais delimitadores em sequencia, sem aninhamento" name="delimitadores balanceados com literais delimitadores em sequencia, sem aninhamento" time="0.001">
+    </testcase>
+    <testcase classname="delimitadores balanceados com literais ordem de fechamento errada e invalida" name="delimitadores balanceados com literais ordem de fechamento errada e invalida" time="0">
+    </testcase>
+    <testcase classname="delimitadores balanceados com literais abre e nao fecha e invalido" name="delimitadores balanceados com literais abre e nao fecha e invalido" time="0">
+    </testcase>
+    <testcase classname="delimitadores balanceados com literais fecha antes de abrir e invalido" name="delimitadores balanceados com literais fecha antes de abrir e invalido" time="0.001">
+    </testcase>
+    <testcase classname="delimitadores balanceados com literais caracteres fora do alfabeto de delimitadores sao ignorados" name="delimitadores balanceados com literais caracteres fora do alfabeto de delimitadores sao ignorados" time="0">
+    </testcase>
+    <testcase classname="delimitadores balanceados com literais delimitador dentro de literal nao conta" name="delimitadores balanceados com literais delimitador dentro de literal nao conta" time="0">
+    </testcase>
+    <testcase classname="delimitadores balanceados com literais literal pode conter um desbalanceamento inteiro" name="delimitadores balanceados com literais literal pode conter um desbalanceamento inteiro" time="0">
+    </testcase>
+    <testcase classname="delimitadores balanceados com literais aspa aberta e nunca fechada invalida o texto" name="delimitadores balanceados com literais aspa aberta e nunca fechada invalida o texto" time="0">
+    </testcase>
+    <testcase classname="delimitadores balanceados com literais literais consecutivos alternam entrada e saida" name="delimitadores balanceados com literais literais consecutivos alternam entrada e saida" time="0">
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="12" failures="0" errors="0" time="1.108">
+  <testsuite name="duracao legivel" errors="0" failures="0" skipped="0" timestamp="2026-09-16T22:15:28" time="0.595" tests="12">
+    <testcase classname="duracao legivel zero segundos e o instante atual" name="duracao legivel zero segundos e o instante atual" time="0.004">
+    </testcase>
+    <testcase classname="duracao legivel um segundo no singular" name="duracao legivel um segundo no singular" time="0.001">
+    </testcase>
+    <testcase classname="duracao legivel segundos no plural" name="duracao legivel segundos no plural" time="0">
+    </testcase>
+    <testcase classname="duracao legivel um minuto exato nao mostra segundos" name="duracao legivel um minuto exato nao mostra segundos" time="0.001">
+    </testcase>
+    <testcase classname="duracao legivel dois itens sao unidos por &apos; e &apos;" name="duracao legivel dois itens sao unidos por &apos; e &apos;" time="0.001">
+    </testcase>
+    <testcase classname="duracao legivel uma hora exata" name="duracao legivel uma hora exata" time="0">
+    </testcase>
+    <testcase classname="duracao legivel tres itens usam virgula e depois &apos; e &apos;" name="duracao legivel tres itens usam virgula e depois &apos; e &apos;" time="0.001">
+    </testcase>
+    <testcase classname="duracao legivel um dia exato" name="duracao legivel um dia exato" time="0">
+    </testcase>
+    <testcase classname="duracao legivel uma semana exata" name="duracao legivel uma semana exata" time="0.001">
+    </testcase>
+    <testcase classname="duracao legivel as cinco unidades juntas" name="duracao legivel as cinco unidades juntas" time="0.001">
+    </testcase>
+    <testcase classname="duracao legivel unidades intermediarias zeradas sao omitidas" name="duracao legivel unidades intermediarias zeradas sao omitidas" time="0">
+    </testcase>
+    <testcase classname="duracao legivel duracao negativa e rejeitada" name="duracao legivel duracao negativa e rejeitada" time="0.015">
+    </testcase>
+  </testsuite>
+</testsuites>

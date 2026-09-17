@@ -1,4 +1,13 @@
 ﻿trial_id,integrante,kata,tratamento,ordem,inicio_iso,fim_iso,time_to_green_s,censurado,testes_total,testes_passando,taxa_sucesso,n_prompts,observacoes
+p1-kata-01-faixas-ia,p1,kata-01-faixas,IA,1,2026-09-14T21:38:04,2026-09-14T21:38:08,4,false,12,12,1,4,""
+p1-kata-02-espiral-manual,p1,kata-02-espiral,MANUAL,2,2026-09-14T22:00:21,2026-09-14T22:00:26,4,false,12,12,1,,""
+p2-kata-01-faixas-ia,p2,kata-01-faixas,IA,1,2026-09-16T19:08:05,2026-09-16T19:08:12,7,false,12,12,1,1,""
+p2-kata-01-faixas-ia,p2,kata-01-faixas,IA,1,2026-09-16T19:12:30,2026-09-16T19:12:36,6,false,12,12,1,1,""
+p2-kata-03-duracao-ia,p2,kata-03-duracao,IA,3,2026-09-16T19:15:24,2026-09-16T19:15:29,5,false,12,12,1,1,""
+p2-kata-05-rainha-ia,p2,kata-05-rainha,IA,5,2026-09-16T19:39:36,2026-09-16T19:39:42,6,false,12,12,1,1,""
+p2-kata-02-espiral-manual,p2,kata-02-espiral,MANUAL,2,2026-09-16T21:05:55,2026-09-16T21:15:00,544,false,12,12,1,,""
+p2-kata-04-romanos-manual,p2,kata-04-romanos,MANUAL,4,2026-09-16T21:16:06,2026-09-16T21:26:49,643,false,12,12,1,,""
+p2-kata-06-delimitadores-manual,p2,kata-06-delimitadores,MANUAL,6,2026-09-16T21:42:58,2026-09-16T21:50:18,440,false,12,12,1,,""
 p1-kata-01-faixas-ia,p1,kata-01-faixas,IA,1,2026-09-15T22:08:04,2026-09-15T22:08:55,50,false,12,12,1,1,""
 p1-kata-02-espiral-manual,p1,kata-02-espiral,MANUAL,2,2026-09-15T22:54:06,2026-09-15T23:02:02,476,false,12,12,1,,""
 p1-kata-03-duracao-ia,p1,kata-03-duracao,IA,3,2026-09-16T18:25:33,2026-09-16T18:26:20,47,false,12,12,1,1,""
