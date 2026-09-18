@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="12" failures="0" errors="0" time="0.666">
+  <testsuite name="numeral romano com validacao" errors="0" failures="0" skipped="0" timestamp="2026-09-17T00:46:12" time="0.369" tests="12">
+    <testcase classname="numeral romano com validacao simbolo unico" name="numeral romano com validacao simbolo unico" time="0.002">
+    </testcase>
+    <testcase classname="numeral romano com validacao repeticao aditiva ate tres vezes" name="numeral romano com validacao repeticao aditiva ate tres vezes" time="0">
+    </testcase>
+    <testcase classname="numeral romano com validacao par subtrativo simples" name="numeral romano com validacao par subtrativo simples" time="0.001">
+    </testcase>
+    <testcase classname="numeral romano com validacao aditivo depois de simbolo maior" name="numeral romano com validacao aditivo depois de simbolo maior" time="0">
+    </testcase>
+    <testcase classname="numeral romano com validacao numeral longo com dois pares subtrativos" name="numeral romano com validacao numeral longo com dois pares subtrativos" time="0">
+    </testcase>
+    <testcase classname="numeral romano com validacao maior numeral representavel" name="numeral romano com validacao maior numeral representavel" time="0.001">
+    </testcase>
+    <testcase classname="numeral romano com validacao quatro repeticoes seguidas sao invalidas" name="numeral romano com validacao quatro repeticoes seguidas sao invalidas" time="0.009">
+    </testcase>
+    <testcase classname="numeral romano com validacao V, L e D nunca se repetem, mesmo separados" name="numeral romano com validacao V, L e D nunca se repetem, mesmo separados" time="0">
+    </testcase>
+    <testcase classname="numeral romano com validacao subtracao fora da lista permitida e invalida" name="numeral romano com validacao subtracao fora da lista permitida e invalida" time="0.001">
+    </testcase>
+    <testcase classname="numeral romano com validacao simbolo fora do alfabeto romano e invalido" name="numeral romano com validacao simbolo fora do alfabeto romano e invalido" time="0.001">
+    </testcase>
+    <testcase classname="numeral romano com validacao string vazia e invalida" name="numeral romano com validacao string vazia e invalida" time="0">
+    </testcase>
+    <testcase classname="numeral romano com validacao depois de par subtrativo so pode vir simbolo menor" name="numeral romano com validacao depois de par subtrativo so pode vir simbolo menor" time="0.001">
+    </testcase>
+  </testsuite>
+</testsuites>
