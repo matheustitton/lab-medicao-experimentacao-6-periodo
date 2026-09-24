@@ -1,0 +1,7 @@
+kata,n_ia,n_manual,par_completo,integrantes_ia,integrantes_manual
+kata-01-faixas,3,0,False,"p1,p2,p3",
+kata-02-espiral,1,2,True,p3,"p1,p2"
+kata-03-duracao,2,1,True,"p1,p2",p3
+kata-04-romanos,1,2,True,p3,"p1,p2"
+kata-05-rainha,2,1,True,"p1,p2",p3
+kata-06-delimitadores,0,3,False,,"p1,p2,p3"
