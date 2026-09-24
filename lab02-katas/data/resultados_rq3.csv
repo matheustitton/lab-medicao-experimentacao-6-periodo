@@ -1,0 +1,15 @@
+rq,metrica,escopo,teste,n,estatistica,p_valor,alternativa,efeito,valor_efeito,magnitude,decisao,observacao
+RQ3,cc_media,completo (18 trials),Wilcoxon pareado por kata,4,3.0,0.625,two-sided,rank-biserial pareado,0.4,direcao mista,nao rejeita H0,"n=4: o menor p alcancavel pelo teste exato e 0,1250, acima de alfa=0.05 - o teste nao pode rejeitar H0 neste N. katas sem par excluidas: kata-01-faixas, kata-06-delimitadores"
+RQ3,cc_media,completo (18 trials),Mann-Whitney U,18,25.5,0.198781,two-sided,Cliff's delta,-0.3704,medio,nao rejeita H0,
+RQ3,loc,completo (18 trials),Wilcoxon pareado por kata,4,3.0,0.625,two-sided,rank-biserial pareado,0.4,direcao mista,nao rejeita H0,"n=4: o menor p alcancavel pelo teste exato e 0,1250, acima de alfa=0.05 - o teste nao pode rejeitar H0 neste N. katas sem par excluidas: kata-01-faixas, kata-06-delimitadores"
+RQ3,loc,completo (18 trials),Mann-Whitney U,18,30.5,0.400324,two-sided,Cliff's delta,-0.2469,pequeno,nao rejeita H0,
+RQ3,cc_soma_por_loc,completo (18 trials),Wilcoxon pareado por kata,4,1.0,0.25,two-sided,rank-biserial pareado,-0.8,direcao mista,nao rejeita H0,"n=4: o menor p alcancavel pelo teste exato e 0,1250, acima de alfa=0.05 - o teste nao pode rejeitar H0 neste N. katas sem par excluidas: kata-01-faixas, kata-06-delimitadores"
+RQ3,cc_soma_por_loc,completo (18 trials),Mann-Whitney U,18,24.0,0.15749,two-sided,Cliff's delta,-0.4074,medio,nao rejeita H0,
+RQ3,pct_duplicado,completo (18 trials),Wilcoxon pareado por kata,,,,two-sided,rank-biserial pareado,,indefinido,nao aplicavel,"so 1 de 18 trials com duplicacao (p3-kata-04-romanos-ia (2,44%)) - variancia quase nula, teste degenerado"
+RQ3,pct_duplicado,completo (18 trials),Mann-Whitney U,,,,two-sided,Cliff's delta,,indefinido,nao aplicavel,"so 1 de 18 trials com duplicacao (p3-kata-04-romanos-ia (2,44%)) - variancia quase nula, teste degenerado"
+RQ3,cc_media,sem P1,Wilcoxon pareado por kata,4,1.0,0.5,two-sided,rank-biserial pareado,0.6667,direcao mista,nao rejeita H0,"n=4: o menor p alcancavel pelo teste exato e 0,1250, acima de alfa=0.05 - o teste nao pode rejeitar H0 neste N. katas sem par excluidas: kata-01-faixas, kata-06-delimitadores"
+RQ3,cc_media,sem P1,Mann-Whitney U,12,14.5,0.627932,two-sided,Cliff's delta,-0.1944,pequeno,nao rejeita H0,
+RQ3,cc_media,sem P2,Wilcoxon pareado por kata,4,3.0,0.625,two-sided,rank-biserial pareado,0.4,direcao mista,nao rejeita H0,"n=4: o menor p alcancavel pelo teste exato e 0,1250, acima de alfa=0.05 - o teste nao pode rejeitar H0 neste N. katas sem par excluidas: kata-01-faixas, kata-06-delimitadores"
+RQ3,cc_media,sem P2,Mann-Whitney U,12,12.5,0.421712,two-sided,Cliff's delta,-0.3056,pequeno,nao rejeita H0,
+RQ3,cc_media,sem P3,Wilcoxon pareado por kata,0,,,two-sided,rank-biserial pareado,,indefinido,nao aplicavel,"apenas 0 pares completos; katas sem par: kata-01-faixas, kata-02-espiral, kata-03-duracao, kata-04-romanos, kata-05-rainha, kata-06-delimitadores"
+RQ3,cc_media,sem P3,Mann-Whitney U,12,5.5,0.053819,two-sided,Cliff's delta,-0.6944,grande,nao rejeita H0,
