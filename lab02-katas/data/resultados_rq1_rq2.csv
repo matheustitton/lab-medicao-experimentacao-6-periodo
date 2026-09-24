@@ -1,0 +1,9 @@
+rq,metrica,escopo,teste,n,estatistica,p_valor,alternativa,efeito,valor_efeito,magnitude,decisao,observacao
+RQ1,time_to_green_s,completo (18 trials),Wilcoxon pareado por kata,4,0.0,0.0625,less,rank-biserial pareado,-1.0,direcao consistente,nao rejeita H0,"n=4: o menor p alcancavel pelo teste exato e 0,0625, acima de alfa=0.05 - o teste nao pode rejeitar H0 neste N. katas sem par excluidas: kata-01-faixas, kata-06-delimitadores"
+RQ1,time_to_green_s,completo (18 trials),Mann-Whitney U,18,0.0,0.000205,less,Cliff's delta,-1.0,grande,rejeita H0,
+RQ2,taxa_sucesso,completo (18 trials),Wilcoxon pareado por kata,4,,,greater,rank-biserial pareado,0.0,nulo,nao aplicavel,diferenca zero em todos os pares - sem variancia para testar
+RQ2,taxa_sucesso,completo (18 trials),Mann-Whitney U,18,,,greater,Cliff's delta,0.0,nulo,nao aplicavel,variancia zero nos dois grupos - nao ha o que ordenar
+RQ1,time_to_green_s,sem P1,Wilcoxon pareado por kata,4,0.0,0.0625,less,rank-biserial pareado,-1.0,direcao consistente,nao rejeita H0,"n=4: o menor p alcancavel pelo teste exato e 0,0625, acima de alfa=0.05 - o teste nao pode rejeitar H0 neste N. katas sem par excluidas: kata-01-faixas, kata-06-delimitadores"
+RQ1,time_to_green_s,sem P1,Mann-Whitney U,12,0.0,0.002499,less,Cliff's delta,-1.0,grande,rejeita H0,
+RQ1,time_to_green_s,sem cronometro suspeito,Wilcoxon pareado por kata,4,0.0,0.0625,less,rank-biserial pareado,-1.0,direcao consistente,nao rejeita H0,"n=4: o menor p alcancavel pelo teste exato e 0,0625, acima de alfa=0.05 - o teste nao pode rejeitar H0 neste N. katas sem par excluidas: kata-01-faixas, kata-06-delimitadores"
+RQ1,time_to_green_s,sem cronometro suspeito,Mann-Whitney U,15,0.0,0.0002,less,Cliff's delta,-1.0,grande,rejeita H0,

@@ -1,0 +1,4 @@
+trial_id,integrante,kata,tratamento,ordem,inicio_iso,fim_iso,time_to_green_s,censurado,testes_total,testes_passando,taxa_sucesso,n_prompts,observacoes,motivo
+p1-kata-01-faixas-ia,p1,kata-01-faixas,IA,1,2026-09-14T21:38:04,2026-09-14T21:38:08,4,False,12,12,1,4.0,,execucao anterior do mesmo trial_id (superada por uma mais recente)
+p1-kata-02-espiral-manual,p1,kata-02-espiral,MANUAL,2,2026-09-14T22:00:21,2026-09-14T22:00:26,4,False,12,12,1,,,execucao anterior do mesmo trial_id (superada por uma mais recente)
+p2-kata-01-faixas-ia,p2,kata-01-faixas,IA,1,2026-09-16T19:08:05,2026-09-16T19:08:12,7,False,12,12,1,1.0,,execucao anterior do mesmo trial_id (superada por uma mais recente)

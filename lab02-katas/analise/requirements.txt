@@ -1,0 +1,7 @@
+# Analise da S03 (Passo 4) e dashboard (Passo 6).
+# A coleta (scripts/*.ps1) nao usa nada daqui: roda so com Node.
+pandas==2.2.3
+scipy==1.18.1
+matplotlib==3.9.4
+seaborn==0.13.2
+markdown==3.10.3

@@ -1,0 +1,8 @@
+metrica,tratamento,n,mediana,q1,q3,iqr,min,max
+time_to_green_s,IA,9,47.0,6.0,91.0,85.0,5.0,143.0
+time_to_green_s,MANUAL,9,541.0,441.0,643.0,202.0,374.0,679.0
+taxa_sucesso,IA,9,1.0,1.0,1.0,0.0,1.0,1.0
+taxa_sucesso,MANUAL,9,1.0,1.0,1.0,0.0,1.0,1.0
+testes_passando,IA,9,12.0,12.0,12.0,0.0,12.0,12.0
+testes_passando,MANUAL,9,12.0,12.0,12.0,0.0,12.0,12.0
+n_prompts,IA,9,1.0,1.0,1.0,0.0,1.0,2.0
