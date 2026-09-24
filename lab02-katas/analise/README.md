@@ -29,8 +29,8 @@ python analise\montar_relatorio.py      # docs/relatorio-final.md
 | `comum.py` | compartilhado | - | caminhos, constantes, CSV, descritiva, tamanhos de efeito |
 | `consolidar_dados.py` | RQ1/RQ2 | `data/trials.csv` | `data/trials_consolidado.csv`, `docs/resultados/00-consolidacao.md` |
 | `rq1_rq2.py` | RQ1/RQ2 | `data/trials_consolidado.csv` | `data/resultados_rq1_rq2.csv`, `docs/resultados/rq1-rq2.md` |
-| `rq3.py` | RQ3 | `data/metrics.csv` | `data/resultados_rq3.csv`, `docs/resultados/rq3.md` |
-| `dashboard.py` | dashboard | os dois anteriores | `docs/figuras/*.png` |
+| `rq3.py` | RQ3 | `data/metrics.csv` | `data/metrics_consolidado.csv`, `data/resultados_rq3.csv`, `data/descritivas_rq3.csv`, `docs/resultados/rq3.md` |
+| `dashboard.py` | dashboard | CSVs dos dois anteriores (nao recalcula) | `docs/figuras/fig01..fig06-*.png` + resumo das 3 RQs no console |
 | `montar_relatorio.py` | relatorio | `docs/relatorio/NN-*.md` | `docs/relatorio-final.md` |
 
 ## Convencoes que nao sao negociaveis
