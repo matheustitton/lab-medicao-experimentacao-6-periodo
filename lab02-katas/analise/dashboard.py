@@ -1,28 +1,3 @@
-"""S03 - Passo 6: dashboard de visualizacao do experimento.
-
-    python analise/dashboard.py     (depende de consolidar_dados.py, rq1_rq2.py e rq3.py)
-
-Gera as figuras do relatorio final em `docs/figuras/`, consolidando o resultado
-das tres frentes: tempo (RQ1), taxa de sucesso (RQ2) e metricas estaticas (RQ3).
-Se a RQ3 ainda nao tiver sido medida, as figuras dela sao puladas com aviso e o
-resto e gerado assim mesmo.
-
-Decisoes de visualizacao, para quem for mexer:
-
-- **Pontos, nao boxplot.** Com n = 9 por tratamento, um boxplot esconde os dados
-  atras de um resumo de cinco numeros. Cada trial aparece como um ponto, e a
-  mediana entra como marca explicita.
-- **Mediana, nunca media.** Mesma regra do plano de analise.
-- **Duas cores fixas** (azul = IA, laranja = MANUAL), validadas para daltonismo
-  (delta E 24,7 sob protanopia, piso 8). A cor segue o tratamento em toda figura.
-- **Sem eixo duplo, sem pizza, sem gradiente em categoria nominal.**
-- **Identidade nunca so pela cor**: legenda presente ou rotulo direto no eixo.
-- **As katas sem par aparecem marcadas, nao omitidas** - a limitacao faz parte do
-  resultado.
-- A RQ2 nao vira grafico de barras: com todos os 18 trials em 100%, a resposta e
-  um numero, e duas barras iguais so gastariam tinta.
-"""
-
 from __future__ import annotations
 
 import sys
