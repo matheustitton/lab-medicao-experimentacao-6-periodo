@@ -1,21 +1,26 @@
-"""S03 - Passo 6: dashboard de visualizacao (consolidacao das tres RQs).
+"""S03 - Passo 6: dashboard de visualizacao do experimento.
 
-    python analise/dashboard.py     (depende de analise/rq1_rq2.py e analise/rq3.py)
+    python analise/dashboard.py     (depende de consolidar_dados.py, rq1_rq2.py e rq3.py)
 
-Nao recalcula nenhum teste: le os CSVs que rq1_rq2.py e rq3.py gravaram e so desenha.
-Assim a figura e a tabela do relatorio nunca divergem.
+Gera as figuras do relatorio final em `docs/figuras/`, consolidando o resultado
+das tres frentes: tempo (RQ1), taxa de sucesso (RQ2) e metricas estaticas (RQ3).
+Se a RQ3 ainda nao tiver sido medida, as figuras dela sao puladas com aviso e o
+resto e gerado assim mesmo.
 
-Figuras (docs/figuras/):
-  fig01-rq1-tempo-por-tratamento.png   boxplot + trials + par por integrante, escala log
-  fig02-rq1-mediana-por-kata.png       mediana IA x MANUAL em cada kata (blocos do Wilcoxon)
-  fig03-rq2-taxa-sucesso.png           taxa de sucesso por trial (efeito teto)
-  fig04-rq3-complexidade.png           boxplot + trials, complexidade ciclomatica media
-  fig05-rq3-loc.png                    boxplot + trials, LOC (controle)
-  fig06-rq3-complexidade-por-kata.png  mediana IA x MANUAL da complexidade em cada kata
+Decisoes de visualizacao, para quem for mexer:
 
-Codificacao visual: a cor e sempre o TRATAMENTO (comum.COR - mesma cor em todas as
-figuras); o integrante vai no formato do marcador, para nao competir com a cor. A caixa e
-mediana/IQR, nunca media - mesma convencao das tabelas.
+- **Pontos, nao boxplot.** Com n = 9 por tratamento, um boxplot esconde os dados
+  atras de um resumo de cinco numeros. Cada trial aparece como um ponto, e a
+  mediana entra como marca explicita.
+- **Mediana, nunca media.** Mesma regra do plano de analise.
+- **Duas cores fixas** (azul = IA, laranja = MANUAL), validadas para daltonismo
+  (delta E 24,7 sob protanopia, piso 8). A cor segue o tratamento em toda figura.
+- **Sem eixo duplo, sem pizza, sem gradiente em categoria nominal.**
+- **Identidade nunca so pela cor**: legenda presente ou rotulo direto no eixo.
+- **As katas sem par aparecem marcadas, nao omitidas** - a limitacao faz parte do
+  resultado.
+- A RQ2 nao vira grafico de barras: com todos os 18 trials em 100%, a resposta e
+  um numero, e duas barras iguais so gastariam tinta.
 """
 
 from __future__ import annotations
@@ -25,256 +30,420 @@ from pathlib import Path
 
 import matplotlib
 
-matplotlib.use("Agg")
+matplotlib.use("Agg")  # backend sem janela: roda igual em qualquer maquina
 
 import matplotlib.pyplot as plt  # noqa: E402
-import matplotlib.ticker  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
+import seaborn as sns  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import comum as c  # noqa: E402
 
-MARCADOR = {"p1": "o", "p2": "s", "p3": "^"}
-ROTULO_TRATAMENTO = {"IA": "Com IA", "MANUAL": "Manual"}
-
-plt.rcParams.update({
-    "figure.dpi": 150, "savefig.dpi": 150, "savefig.bbox": "tight",
-    "figure.facecolor": c.COR_SUPERFICIE, "axes.facecolor": c.COR_SUPERFICIE,
-    "font.size": 10, "axes.titlesize": 11, "axes.titleweight": "bold",
-    "axes.titlelocation": "left", "axes.labelcolor": c.COR_TEXTO_SEC,
-    "text.color": c.COR_TEXTO, "xtick.color": c.COR_TEXTO_SEC, "ytick.color": c.COR_TEXTO_SEC,
-    "axes.edgecolor": c.COR_GRID, "axes.spines.top": False, "axes.spines.right": False,
-    "axes.grid": True, "axes.axisbelow": True, "grid.color": c.COR_GRID, "grid.linewidth": 0.8,
-    "legend.frameon": False,
-})
+DPI = 200
 
 
-def _salvar(fig: plt.Figure, nome: str) -> Path:
+def aplicar_estilo() -> None:
+    sns.set_theme(style="whitegrid")
+    plt.rcParams.update({
+        "figure.facecolor": c.COR_SUPERFICIE,
+        "axes.facecolor": c.COR_SUPERFICIE,
+        "savefig.facecolor": c.COR_SUPERFICIE,
+        "axes.edgecolor": c.COR_GRID,
+        "axes.labelcolor": c.COR_TEXTO_SEC,
+        "axes.titlecolor": c.COR_TEXTO,
+        "axes.titlesize": 13,
+        "axes.titleweight": "semibold",
+        "axes.labelsize": 10,
+        "axes.grid": True,
+        "grid.color": c.COR_GRID,
+        "grid.linewidth": 0.8,
+        "grid.linestyle": "-",          # grade tracejada le como "projecao"; e so grade
+        "text.color": c.COR_TEXTO,
+        "xtick.color": c.COR_TEXTO_SEC,
+        "ytick.color": c.COR_TEXTO_SEC,
+        "xtick.labelsize": 9,
+        "ytick.labelsize": 9,
+        "legend.frameon": False,
+        "legend.fontsize": 9,
+        "font.size": 10,
+    })
+
+
+def virgula_decimal(eixo) -> None:
+    """Rotulo de eixo em pt-BR: 0,25 e nao 0.25.
+
+    Sem isso a figura mistura as duas notacoes - o eixo com ponto e o rotulo da
+    mediana com virgula, que sao gerados por caminhos diferentes.
+    """
+    eixo.set_major_formatter(
+        matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:g}".replace(".", ","))
+    )
+
+
+def limpar_eixo(ax, eixo_x_apenas: bool = True) -> None:
+    for lado in ("top", "right", "left"):
+        ax.spines[lado].set_visible(False)
+    ax.spines["bottom"].set_color(c.COR_GRID)
+    ax.set_axisbelow(True)
+    virgula_decimal(ax.xaxis)
+    if eixo_x_apenas:
+        ax.grid(axis="y", visible=False)
+        ax.grid(axis="x", visible=True)
+
+
+def salvar(fig, nome: str) -> None:
     c.FIGURAS.mkdir(parents=True, exist_ok=True)
     caminho = c.FIGURAS / nome
-    fig.savefig(caminho)
+    fig.savefig(caminho, dpi=DPI, bbox_inches="tight")
     plt.close(fig)
     print("  -> " + str(caminho.relative_to(c.RAIZ)))
-    return caminho
 
 
-def _eixo_log(eixo: matplotlib.axis.Axis) -> None:
-    """Escala log com ticks em segundos legiveis (5, 10, 30...), nao em potencias de 10."""
-    eixo.set_major_locator(matplotlib.ticker.FixedLocator([5, 10, 30, 60, 100, 300, 600, 1000]))
-    eixo.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:.0f}"))
-    eixo.set_minor_formatter(matplotlib.ticker.NullFormatter())
+def pontos_por_tratamento(ax, df: pd.DataFrame, coluna: str, rotulo_x: str,
+                          titulo: str, casas: int = 0) -> None:
+    """Dot plot horizontal: um ponto por trial, mediana marcada e rotulada."""
+    ordem = [t for t in c.TRATAMENTOS if (df["tratamento"] == t).any()]
+    rng = np.random.default_rng(42)  # jitter reprodutivel
 
-
-def _legenda_integrantes(ax: plt.Axes) -> None:
-    alcas = [
-        plt.Line2D([], [], marker=MARCADOR[p], linestyle="none", markersize=7,
-                   markerfacecolor=c.COR_NEUTRA, markeredgecolor=c.COR_SUPERFICIE, label=p.upper())
-        for p in c.INTEGRANTES
-    ]
-    ax.legend(handles=alcas, title="Integrante", loc="upper left", bbox_to_anchor=(1.0, 1.0))
-
-
-def boxplot_pareado(
-    df: pd.DataFrame, coluna: str, titulo: str, ylabel: str, nome: str,
-    logscale: bool = False, rotular: pd.Series | None = None,
-) -> Path:
-    """Caixa (mediana/IQR) por tratamento + cada trial + linha ligando as medianas de cada integrante.
-
-    A linha por integrante torna visivel o desenho within-subject: cada pessoa fez as duas
-    condicoes, em katas diferentes.
-    """
-    fig, ax = plt.subplots(figsize=(7, 4.6))
-    posicoes = {t: i for i, t in enumerate(c.TRATAMENTOS)}
-
-    for t, x in posicoes.items():
-        valores = df.loc[df["tratamento"] == t, coluna].dropna().to_numpy(dtype=float)
-        ax.boxplot(
-            [valores], positions=[x], widths=0.42, patch_artist=True, showfliers=False,
-            whis=(0, 100),
-            boxprops=dict(facecolor=c.COR[t], alpha=0.18, edgecolor=c.COR[t], linewidth=1.2),
-            medianprops=dict(color=c.COR[t], linewidth=2.4),
-            whiskerprops=dict(color=c.COR[t], linewidth=1.2), capprops=dict(color=c.COR[t], linewidth=1.2),
+    for i, tratamento in enumerate(ordem):
+        valores = df.loc[df["tratamento"] == tratamento, coluna].dropna().to_numpy(dtype=float)
+        if valores.size == 0:
+            continue
+        jitter = rng.uniform(-0.13, 0.13, size=valores.size)
+        ax.scatter(
+            valores, np.full(valores.size, i) + jitter,
+            s=70, color=c.COR[tratamento], alpha=0.85,
+            edgecolors=c.COR_SUPERFICIE, linewidths=2, zorder=3,
         )
         mediana = float(np.median(valores))
+        ax.plot([mediana, mediana], [i - 0.28, i + 0.28],
+                color=c.COR[tratamento], linewidth=2.5, zorder=4)
         ax.annotate(
-            f"mediana {c.fmt_num(mediana, 0 if mediana.is_integer() else 2)}", (x + 0.24, mediana),
-            xytext=(4, 0), textcoords="offset points", va="center", fontsize=9, color=c.COR_TEXTO,
+            f"mediana {c.fmt_num(mediana, casas)}",
+            xy=(mediana, i + 0.34), ha="center", va="bottom",
+            fontsize=9, color=c.COR_TEXTO_SEC,
         )
 
-    for pessoa in c.INTEGRANTES:
-        sub = df[df["integrante"] == pessoa]
-        medianas = [sub.loc[sub["tratamento"] == t, coluna].median() for t in c.TRATAMENTOS]
-        ax.plot(list(posicoes.values()), medianas, color=c.COR_NEUTRA, linewidth=1.2,
-                alpha=0.55, zorder=2, linestyle=(0, (3, 2)))
-        for t, x in posicoes.items():
-            valores = sub.loc[sub["tratamento"] == t, coluna]
-            # deslocamento deterministico por integrante - pontos empatados nao se escondem
-            desloc = (c.INTEGRANTES.index(pessoa) - 1) * 0.07
-            ax.scatter(
-                np.full(len(valores), x + desloc), valores, marker=MARCADOR[pessoa], s=48,
-                color=c.COR[t], edgecolors=c.COR_SUPERFICIE, linewidths=1.5, zorder=3,
+    ax.set_yticks(range(len(ordem)))
+    ax.set_yticklabels([f"{t}  (n={int((df['tratamento'] == t).sum())})" for t in ordem])
+    ax.set_ylim(-0.6, len(ordem) - 0.35)
+    ax.set_xlabel(rotulo_x)
+    ax.set_title(titulo, loc="left", pad=12)
+    limpar_eixo(ax)
+
+
+# --------------------------------------------------------------- figuras ---
+
+
+def fig_tempo(df: pd.DataFrame) -> None:
+    fig, ax = plt.subplots(figsize=(9, 3.6))
+    pontos_por_tratamento(
+        ax, df, "time_to_green_s", "time-to-green (segundos)",
+        "RQ1 - tempo ate a suite ficar verde, por tratamento",
+    )
+    ia = df.loc[df["tratamento"] == "IA", "time_to_green_s"]
+    manual = df.loc[df["tratamento"] == "MANUAL", "time_to_green_s"]
+    ax.annotate(
+        f"separacao completa: o trial IA mais lento ({int(ia.max())}s) ainda e mais rapido\n"
+        f"que o trial MANUAL mais rapido ({int(manual.min())}s)",
+        xy=(0.5, -0.42), xycoords="axes fraction", ha="center",
+        fontsize=9, color=c.COR_TEXTO_SEC,
+    )
+    salvar(fig, "fig01-rq1-tempo-por-tratamento.png")
+
+
+def fig_tempo_por_kata(df: pd.DataFrame) -> None:
+    """Halteres: a mediana de cada tratamento na mesma kata, ligadas.
+
+    E a figura que mostra o bloco do Wilcoxon - inclusive as duas katas que nao
+    formam par, que aparecem marcadas para nao sumirem da historia.
+    """
+    tabela = c.medianas_por_kata(df, "time_to_green_s")
+    fig, ax = plt.subplots(figsize=(9, 4.2))
+
+    for i, (_, r) in enumerate(tabela.iterrows()):
+        if r["par_completo"]:
+            ax.plot([r["MANUAL"], r["IA"]], [i, i], color=c.COR_GRID, linewidth=3, zorder=1)
+        for tratamento in c.TRATAMENTOS:
+            valor = r[tratamento]
+            if valor == valor:
+                ax.scatter(valor, i, s=110, color=c.COR[tratamento], zorder=3,
+                           edgecolors=c.COR_SUPERFICIE, linewidths=2)
+        if not r["par_completo"]:
+            presente = "IA" if r["IA"] == r["IA"] else "MANUAL"
+            ax.annotate(
+                f"sem par - so {presente}", xy=(float(r[presente]), i),
+                xytext=(14, 0), textcoords="offset points", va="center",
+                fontsize=9, color=c.COR_NEUTRA, style="italic",
             )
 
-    if rotular is not None:
-        for _, r in df[rotular].iterrows():
-            x = posicoes[r["tratamento"]] + (c.INTEGRANTES.index(r["integrante"]) - 1) * 0.07
-            ax.annotate(f"{r['trial_id']} (outlier)", (x, r[coluna]), xytext=(10, 0),
-                        textcoords="offset points", ha="left", va="center", fontsize=8,
-                        color=c.COR_TEXTO_SEC)
-
-    ax.set_xticks(list(posicoes.values()))
-    ax.set_xticklabels([ROTULO_TRATAMENTO[t] for t in c.TRATAMENTOS])
-    ax.set_xlim(-0.6, 1.9)
-    ax.grid(axis="x", visible=False)
-    ax.set_ylabel(ylabel)
-    ax.set_title(titulo)
-    if logscale:
-        ax.set_yscale("log")
-        _eixo_log(ax.yaxis)
-    _legenda_integrantes(ax)
-    return _salvar(fig, nome)
-
-
-def dumbbell_por_kata(df: pd.DataFrame, coluna: str, titulo: str, xlabel: str, nome: str,
-                      logscale: bool = False) -> Path:
-    """Os blocos do Wilcoxon: mediana IA e MANUAL por kata. Kata sem par aparece, so com um ponto."""
-    tabela = c.medianas_por_kata(df, coluna)
-    fig, ax = plt.subplots(figsize=(7, 3.8))
-    ys = np.arange(len(tabela))[::-1]
-
-    for y, (_, r) in zip(ys, tabela.iterrows()):
-        if r["par_completo"]:
-            ax.plot([r["IA"], r["MANUAL"]], [y, y], color=c.COR_NEUTRA, linewidth=2, zorder=2)
-        for t in c.TRATAMENTOS:
-            if pd.notna(r[t]):
-                ax.scatter(r[t], y, s=70, color=c.COR[t], edgecolors=c.COR_SUPERFICIE,
-                           linewidths=2, zorder=3)
-        if not r["par_completo"]:
-            valor = r["IA"] if pd.notna(r["IA"]) else r["MANUAL"]
-            ax.annotate("sem par - fora do teste", (valor, y), xytext=(10, 0),
-                        textcoords="offset points", va="center", fontsize=8, color=c.COR_TEXTO_SEC)
-
-    ax.set_yticks(ys)
+    ax.set_yticks(range(len(tabela)))
     ax.set_yticklabels([c.ROTULO_KATA[k] for k in tabela["kata"]])
-    ax.grid(axis="y", visible=False)
-    ax.set_xlabel(xlabel)
-    ax.set_title(titulo)
-    if logscale:
-        ax.set_xscale("log")
-        _eixo_log(ax.xaxis)
-    alcas = [
-        plt.Line2D([], [], marker="o", linestyle="none", markersize=8, markerfacecolor=c.COR[t],
-                   markeredgecolor=c.COR_SUPERFICIE, label=ROTULO_TRATAMENTO[t])
-        for t in c.TRATAMENTOS
+    ax.invert_yaxis()
+    ax.set_xlabel("mediana do time-to-green (segundos)")
+    ax.set_title("RQ1 - mediana por kata: os blocos do Wilcoxon pareado", loc="left", pad=12)
+    limpar_eixo(ax)
+    for tratamento in c.TRATAMENTOS:
+        ax.scatter([], [], s=110, color=c.COR[tratamento], label=tratamento)
+    ax.legend(loc="upper right")
+    pares = int(tabela["par_completo"].sum())
+    ax.annotate(
+        f"{pares} de 6 katas receberam os dois tratamentos - o n do teste pareado e {pares}, nao 6",
+        xy=(0.5, -0.24), xycoords="axes fraction", ha="center",
+        fontsize=9, color=c.COR_TEXTO_SEC,
+    )
+    salvar(fig, "fig02-rq1-mediana-por-kata.png")
+
+
+def fig_taxa_sucesso(df: pd.DataFrame) -> None:
+    """RQ2 e um numero, nao um grafico: painel de numero + dispersao dos trials."""
+    fig, (ax_num, ax_pontos) = plt.subplots(
+        1, 2, figsize=(9.5, 3.2), gridspec_kw={"width_ratios": [1, 2], "wspace": 0.5}
+    )
+
+    taxa = df["taxa_sucesso"].mean() * 100
+    ax_num.axis("off")
+    ax_num.text(0.0, 0.62, f"{taxa:.0f}%".replace(".", ","), fontsize=44,
+                color=c.COR_TEXTO, ha="left", va="center", fontweight="bold")
+    ax_num.text(0.0, 0.30, "taxa de sucesso em\ntodos os 18 trials", fontsize=10,
+                color=c.COR_TEXTO_SEC, ha="left", va="center")
+    ax_num.text(0.0, 0.06, f"{int(df['censurado'].sum())} trials censurados", fontsize=10,
+                color=c.COR_TEXTO_SEC, ha="left", va="center")
+
+    pontos_por_tratamento(
+        ax_pontos, df, "taxa_sucesso", "taxa de sucesso",
+        "RQ2 - efeito teto: nenhuma variancia para testar", casas=2,
+    )
+    ax_pontos.set_xlim(0.5, 1.08)
+    salvar(fig, "fig03-rq2-taxa-sucesso.png")
+
+
+def fig_rq3_complexidade(metrics: pd.DataFrame) -> None:
+    painel = [
+        ("cc_max_por_loc", "CC maxima / LOC", 3),
+        ("cc_soma", "CC somada", 0),
+        ("loc", "LOC (controle)", 0),
     ]
-    ax.legend(handles=alcas, loc="upper left", bbox_to_anchor=(1.0, 1.0))
-    return _salvar(fig, nome)
+    fig, eixos = plt.subplots(len(painel), 1, figsize=(9, 8.4))
+    for ax, (coluna, titulo, casas) in zip(eixos, painel):
+        pontos_por_tratamento(ax, metrics, coluna, titulo, titulo, casas=casas)
+        ax.set_title(titulo, loc="left", pad=12)
+        ax.set_xlabel("")
+    eixos[0].annotate(
+        "RQ3 - estrutura do codigo final, um ponto por trial",
+        xy=(0, 1.35), xycoords="axes fraction", ha="left",
+        fontsize=13, fontweight="semibold", color=c.COR_TEXTO,
+    )
+    fig.tight_layout(h_pad=3.2)
+    salvar(fig, "fig04-rq3-complexidade.png")
 
 
-def taxa_sucesso(trials: pd.DataFrame) -> Path:
-    fig, ax = plt.subplots(figsize=(7, 3.6))
-    for i, t in enumerate(c.TRATAMENTOS):
-        sub = trials[trials["tratamento"] == t]
-        for pessoa in c.INTEGRANTES:
-            valores = sub.loc[sub["integrante"] == pessoa, "taxa_sucesso"] * 100
-            desloc = (c.INTEGRANTES.index(pessoa) - 1) * 0.12
-            xs = i + desloc + np.linspace(-0.03, 0.03, len(valores)) if len(valores) > 1 else [i + desloc]
-            ax.scatter(xs, valores, marker=MARCADOR[pessoa], s=48, color=c.COR[t],
-                       edgecolors=c.COR_SUPERFICIE, linewidths=1.5, zorder=3)
-        n_total = len(sub)
-        n_cheio = int((sub["taxa_sucesso"] == 1).sum())
-        ax.annotate(f"{n_cheio} de {n_total} trials com 100%", (i, 100), xytext=(0, 14),
-                    textcoords="offset points", ha="center", fontsize=9, color=c.COR_TEXTO)
-    ax.set_xticks(range(len(c.TRATAMENTOS)))
-    ax.set_xticklabels([ROTULO_TRATAMENTO[t] for t in c.TRATAMENTOS])
-    ax.set_xlim(-0.6, 1.6)
-    ax.set_ylim(0, 115)
-    ax.set_yticks([0, 25, 50, 75, 100])
-    ax.grid(axis="x", visible=False)
-    ax.set_ylabel("Testes de aceitacao passando (%)")
-    ax.set_title("RQ2 - Taxa de sucesso por trial: efeito teto nos dois tratamentos")
-    _legenda_integrantes(ax)
-    return _salvar(fig, "fig03-rq2-taxa-sucesso.png")
+def fig_rq3_duplicacao(metrics: pd.DataFrame) -> None:
+    pool = c.ler_csv(c.POOL_DUPLICACAO) if c.POOL_DUPLICACAO.exists() else pd.DataFrame()
+    fig, (ax_trial, ax_pool) = plt.subplots(1, 2, figsize=(10, 3.8))
 
+    pontos_por_tratamento(
+        ax_trial, metrics, "pct_duplicado", "% de linhas duplicadas",
+        "Duplicacao dentro de cada trial (primaria)", casas=2,
+    )
 
-def _linha(res: pd.DataFrame, rq: str, metrica: str, teste: str, escopo: str = "completo (18 trials)") -> pd.Series:
-    sub = res[(res["rq"] == rq) & (res["metrica"] == metrica) & (res["teste"] == teste)
-              & (res["escopo"] == escopo)]
-    c.exigir(len(sub) == 1, f"resultado ausente: {rq} {metrica} {teste} ({escopo}). Rode o script da RQ.")
-    return sub.iloc[0]
+    if pool.empty:
+        ax_pool.axis("off")
+        ax_pool.text(0.5, 0.5, "pool de duplicacao ausente\n(rode run_metrics.ps1 -Todos)",
+                     ha="center", va="center", color=c.COR_TEXTO_SEC, fontsize=10)
+    else:
+        pool = pool.copy()
+        pool["pct_duplicado"] = pd.to_numeric(pool["pct_duplicado"], errors="coerce")
+        pool["n_trials"] = pd.to_numeric(pool["n_trials"], errors="coerce")
+        # log de append, igual ao metrics.csv: a medicao mais recente e a que vale
+        pool = pool.drop_duplicates(["kata", "tratamento"], keep="last")
+        # so os pools que realmente comparam pessoas entre si
+        pool = pool[pool["n_trials"] >= 2]
 
-
-def _mediana(desc: pd.DataFrame, metrica: str, tratamento: str) -> float:
-    return float(desc[(desc["metrica"] == metrica) & (desc["tratamento"] == tratamento)]["mediana"].iloc[0])
-
-
-def resumo_console(res: pd.DataFrame, desc: pd.DataFrame) -> None:
-    c.cabecalho("Consolidacao Lab02 - Sprint 03")
-
-    def teste_str(rq: str, metrica: str) -> str:
-        wk = _linha(res, rq, metrica, "Wilcoxon pareado por kata")
-        mw = _linha(res, rq, metrica, "Mann-Whitney U")
-        if wk["decisao"] == "nao aplicavel" and mw["decisao"] == "nao aplicavel":
-            return "testes nao aplicaveis (" + str(mw["observacao"]) + ")"
-        return (
-            f"Wilcoxon por kata n={int(wk['n'])}/6 p={c.fmt_p(wk['p_valor'])} "
-            f"(rank-biserial {c.fmt_num(wk['valor_efeito'], 3)}) | "
-            f"Mann-Whitney p={c.fmt_p(mw['p_valor'])} (Cliff {c.fmt_num(mw['valor_efeito'], 3)}, "
-            f"{mw['magnitude']}) -> {mw['decisao']}"
+        largura = 0.38
+        katas = [k for k in c.KATAS if k in set(pool["kata"])]
+        for deslocamento, tratamento in zip((-largura / 2, largura / 2), c.TRATAMENTOS):
+            valores, posicoes, ns = [], [], []
+            for i, kata in enumerate(katas):
+                linha = pool[(pool["kata"] == kata) & (pool["tratamento"] == tratamento)]
+                if not linha.empty:
+                    valores.append(float(linha["pct_duplicado"].iloc[0]))
+                    posicoes.append(i + deslocamento)
+                    ns.append(int(linha["n_trials"].iloc[0]))
+            if valores:
+                ax_pool.bar(posicoes, valores, width=largura * 0.92,
+                            color=c.COR[tratamento], label=tratamento, zorder=3)
+                # Barra de 0% e invisivel: sem o rotulo, o leitor nao distingue
+                # "pool sem duplicacao" de "nao existe pool deste tratamento aqui".
+                for x, valor, n in zip(posicoes, valores, ns):
+                    ax_pool.annotate(
+                        f"{c.fmt_num(valor)}\nn={n}", xy=(x, valor), xytext=(0, 4),
+                        textcoords="offset points", ha="center", va="bottom",
+                        fontsize=8, color=c.COR_TEXTO_SEC,
+                    )
+        ax_pool.set_xticks(range(len(katas)))
+        ax_pool.set_xticklabels([c.ROTULO_KATA[k] for k in katas], rotation=30, ha="right")
+        ax_pool.set_ylabel("% duplicado no pool")
+        ax_pool.set_title("Duplicacao entre solucoes de integrantes diferentes",
+                          loc="left", pad=12)
+        ax_pool.set_ylim(0, max(6.0, float(pool["pct_duplicado"].max()) * 1.35))
+        virgula_decimal(ax_pool.yaxis)
+        for lado in ("top", "right"):
+            ax_pool.spines[lado].set_visible(False)
+        ax_pool.grid(axis="x", visible=False)
+        ax_pool.set_axisbelow(True)
+        ax_pool.legend(loc="upper left")
+        ax_pool.annotate(
+            "cada kata recebeu os dois tratamentos em pessoas diferentes; onde falta barra,\n"
+            "aquele tratamento nao teve 2+ solucoes para comparar",
+            xy=(0, -0.42), xycoords="axes fraction", fontsize=8, color=c.COR_NEUTRA,
         )
 
-    linhas = [
-        ("RQ1 tempo (s)", "RQ1", "time_to_green_s", 0),
-        ("RQ2 taxa de sucesso", "RQ2", "taxa_sucesso", 2),
-        ("RQ3 cc_media", "RQ3", "cc_media", 1),
-        ("RQ3 loc", "RQ3", "loc", 0),
-        ("RQ3 cc_soma_por_loc", "RQ3", "cc_soma_por_loc", 3),
-        ("RQ3 pct_duplicado", "RQ3", "pct_duplicado", 2),
+    fig.tight_layout(w_pad=3.0)
+    salvar(fig, "fig05-rq3-duplicacao.png")
+
+
+def fig_painel(df: pd.DataFrame, metrics: pd.DataFrame | None) -> None:
+    """O painel unico do Passo 6: os tres RQs numa figura so."""
+    fig = plt.figure(figsize=(13, 8.5))
+    grade = fig.add_gridspec(3, 3, height_ratios=[0.5, 1.15, 1.15], hspace=0.75, wspace=0.28)
+
+    # --- faixa de indicadores ------------------------------------------------
+    ax_kpi = fig.add_subplot(grade[0, :])
+    ax_kpi.axis("off")
+    ia = df.loc[df["tratamento"] == "IA", "time_to_green_s"]
+    manual = df.loc[df["tratamento"] == "MANUAL", "time_to_green_s"]
+    reducao = (1 - ia.median() / manual.median()) * 100
+    indicadores = [
+        (f"{int(ia.median())}s", "mediana IA", c.COR["IA"]),
+        (f"{int(manual.median())}s", "mediana MANUAL", c.COR["MANUAL"]),
+        (f"-{reducao:.0f}%".replace(".", ","), "reducao da mediana", c.COR_TEXTO),
+        (f"{df['taxa_sucesso'].mean() * 100:.0f}%".replace(".", ","),
+         "sucesso nos 18 trials", c.COR_TEXTO),
+        (f"{int(df['censurado'].sum())}", "trials censurados", c.COR_TEXTO),
     ]
-    for rotulo, rq, metrica, casas in linhas:
-        ia, man = _mediana(desc, metrica, "IA"), _mediana(desc, metrica, "MANUAL")
-        print(f"\n{rotulo}: mediana IA={c.fmt_num(ia, casas)} vs MANUAL={c.fmt_num(man, casas)}")
-        print("  " + teste_str(rq, metrica))
+    for i, (valor, rotulo, cor) in enumerate(indicadores):
+        x = i / len(indicadores)
+        ax_kpi.text(x, 0.45, valor, fontsize=30, fontweight="bold", color=cor,
+                    ha="left", va="center", transform=ax_kpi.transAxes)
+        ax_kpi.text(x, 0.05, rotulo, fontsize=10, color=c.COR_TEXTO_SEC,
+                    ha="left", va="center", transform=ax_kpi.transAxes)
+    ax_kpi.text(0, 1.25, "Lab02 - assistente de IA vs. codificacao manual",
+                fontsize=16, fontweight="bold", color=c.COR_TEXTO,
+                ha="left", va="center", transform=ax_kpi.transAxes)
+    ax_kpi.text(0, 0.95, "18 trials | 3 integrantes | 6 katas | time-box de 35 min | medianas e IQR",
+                fontsize=10, color=c.COR_TEXTO_SEC, ha="left", va="center",
+                transform=ax_kpi.transAxes)
+
+    # --- RQ1 -----------------------------------------------------------------
+    ax1 = fig.add_subplot(grade[1, :2])
+    pontos_por_tratamento(ax1, df, "time_to_green_s", "segundos",
+                          "RQ1 - time-to-green por trial")
+
+    ax2 = fig.add_subplot(grade[1, 2])
+    tabela = c.medianas_por_kata(df, "time_to_green_s")
+    for i, (_, r) in enumerate(tabela.iterrows()):
+        if r["par_completo"]:
+            ax2.plot([r["MANUAL"], r["IA"]], [i, i], color=c.COR_GRID, linewidth=2.5, zorder=1)
+        for tratamento in c.TRATAMENTOS:
+            if r[tratamento] == r[tratamento]:
+                ax2.scatter(r[tratamento], i, s=60, color=c.COR[tratamento], zorder=3,
+                            edgecolors=c.COR_SUPERFICIE, linewidths=1.5)
+    ax2.set_yticks(range(len(tabela)))
+    ax2.set_yticklabels([c.ROTULO_KATA[k] for k in tabela["kata"]], fontsize=8)
+    ax2.invert_yaxis()
+    ax2.set_xlabel("mediana (s)")
+    ax2.set_title("RQ1 - por kata", loc="left", pad=26)  # espaco para a legenda abaixo
+    limpar_eixo(ax2)
+    for tratamento in c.TRATAMENTOS:   # identidade nunca so pela cor
+        ax2.scatter([], [], s=60, color=c.COR[tratamento], label=tratamento)
+    # Acima do eixo: dentro da area de plot a legenda cobre os pontos das katas K5/K6.
+    ax2.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2, fontsize=8)
+    sem_par = [c.ROTULO_KATA[k] for k in tabela.loc[~tabela["par_completo"], "kata"]]
+    if sem_par:
+        ax2.annotate(
+            " e ".join(sem_par) + ": so um tratamento",
+            xy=(0, -0.30), xycoords="axes fraction", fontsize=8, color=c.COR_NEUTRA,
+        )
+
+    # --- RQ2 e RQ3 -----------------------------------------------------------
+    ax3 = fig.add_subplot(grade[2, 0])
+    ax3.axis("off")
+    ax3.text(0, 0.78, f"{df['taxa_sucesso'].mean() * 100:.0f}%".replace(".", ","),
+             fontsize=44, fontweight="bold", color=c.COR_TEXTO, ha="left", va="center")
+    ax3.text(0, 0.42, "RQ2 - taxa de sucesso\nidentica nos dois tratamentos", fontsize=10,
+             color=c.COR_TEXTO_SEC, ha="left", va="center")
+    ax3.text(0, 0.12, "efeito teto: sem variancia,\nnenhum teste e aplicavel", fontsize=9,
+             color=c.COR_NEUTRA, ha="left", va="center", style="italic")
+
+    if metrics is not None and not metrics.empty:
+        ax4 = fig.add_subplot(grade[2, 1])
+        pontos_por_tratamento(ax4, metrics, "cc_max_por_loc", "CC maxima / LOC",
+                              "RQ3 - complexidade normalizada", casas=3)
+        ax5 = fig.add_subplot(grade[2, 2])
+        pontos_por_tratamento(ax5, metrics, "loc", "LOC", "RQ3 - tamanho (controle)")
+    else:
+        ax4 = fig.add_subplot(grade[2, 1:])
+        ax4.axis("off")
+        ax4.text(0.5, 0.5, "RQ3 sem dados: rode run_metrics.ps1 -Todos e depois analise/rq3.py",
+                 ha="center", va="center", color=c.COR_TEXTO_SEC, fontsize=11)
+
+    salvar(fig, "fig06-painel-resumo.png")
+
+
+def escrever_indice(figuras: list[tuple[str, str]]) -> None:
+    linhas = [
+        "# S03 - Dashboard de visualizacao (Passo 6)",
+        "",
+        "Figuras geradas por `analise/dashboard.py`. Regerar sempre que o dataset mudar -",
+        "nenhuma delas e editada a mao.",
+        "",
+    ]
+    for nome, legenda in figuras:
+        linhas += [f"## {legenda}", "", f"![{legenda}](../figuras/{nome})", ""]
+    c.escrever_md("\n".join(linhas) + "\n", c.RESULTADOS / "dashboard.md")
 
 
 def main() -> int:
-    trials = c.carregar_trials()
-    metrics = c.ler_csv(c.METRICS, dica="rode antes:  python analise/rq3.py")
-    res = pd.concat([
-        c.ler_csv(c.RESULTADOS_RQ12, dica="rode antes:  python analise/rq1_rq2.py"),
-        c.ler_csv(c.RESULTADOS_RQ3, dica="rode antes:  python analise/rq3.py"),
-    ], ignore_index=True)
-    desc = pd.concat([
-        c.ler_csv(c.DATA / "descritivas_rq1_rq2.csv"),
-        c.ler_csv(c.DATA / "descritivas_rq3.csv"),
-    ], ignore_index=True)
+    c.cabecalho("S03 - dashboard de visualizacao")
+    aplicar_estilo()
 
-    resumo_console(res, desc)
+    df = c.carregar_trials()
+    metrics = None
+    if c.METRICS.exists():
+        metrics = c.ler_csv(c.METRICS)
+        for coluna in ("loc", "cc_max", "cc_soma", "cc_media", "cc_max_por_loc",
+                       "cc_soma_por_loc", "pct_duplicado"):
+            metrics[coluna] = pd.to_numeric(metrics[coluna], errors="coerce")
+        if len(metrics) != c.N_TRIALS_ESPERADO:
+            print(f"AVISO: metrics_consolidado.csv tem {len(metrics)} trials, "
+                  f"esperado {c.N_TRIALS_ESPERADO}. As figuras da RQ3 saem PARCIAIS.")
+    else:
+        print("AVISO: data/metrics_consolidado.csv ausente - figuras da RQ3 puladas.")
+        print("       Rode antes:  .\\scripts\\run_metrics.ps1 -Todos  e  python analise/rq3.py")
 
     print("\nfiguras geradas:")
-    boxplot_pareado(
-        trials, "time_to_green_s", "RQ1 - Tempo ate a suite ficar verde (time-to-green)",
-        "Segundos (escala log)", "fig01-rq1-tempo-por-tratamento.png", logscale=True,
-    )
-    dumbbell_por_kata(
-        trials, "time_to_green_s", "RQ1 - Mediana do tempo por kata (blocos do Wilcoxon)",
-        "Segundos (escala log)", "fig02-rq1-mediana-por-kata.png", logscale=True,
-    )
-    taxa_sucesso(trials)
-    boxplot_pareado(
-        metrics, "cc_media", "RQ3 - Complexidade ciclomatica media por funcao",
-        "Complexidade ciclomatica (media por funcao)", "fig04-rq3-complexidade.png",
-    )
-    boxplot_pareado(
-        metrics, "loc", "RQ3 - Linhas de codigo (LOC), metrica de controle", "LOC",
-        "fig05-rq3-loc.png", rotular=metrics["pct_duplicado"] > 0,
-    )
-    dumbbell_por_kata(
-        metrics, "cc_media", "RQ3 - Mediana da complexidade por kata (blocos do Wilcoxon)",
-        "Complexidade ciclomatica (media por funcao)", "fig06-rq3-complexidade-por-kata.png",
-    )
+    figuras = []
+    fig_tempo(df)
+    figuras.append(("fig01-rq1-tempo-por-tratamento.png", "RQ1 - tempo por tratamento"))
+    fig_tempo_por_kata(df)
+    figuras.append(("fig02-rq1-mediana-por-kata.png", "RQ1 - mediana por kata"))
+    fig_taxa_sucesso(df)
+    figuras.append(("fig03-rq2-taxa-sucesso.png", "RQ2 - taxa de sucesso"))
+
+    if metrics is not None and not metrics.empty:
+        fig_rq3_complexidade(metrics)
+        figuras.append(("fig04-rq3-complexidade.png", "RQ3 - complexidade e LOC"))
+        fig_rq3_duplicacao(metrics)
+        figuras.append(("fig05-rq3-duplicacao.png", "RQ3 - duplicacao"))
+
+    fig_painel(df, metrics)
+    figuras.append(("fig06-painel-resumo.png", "Painel consolidado"))
+
+    escrever_indice(figuras)
+    print("\nProximo passo: montar o relatorio com  python analise/montar_relatorio.py")
     return 0
 
 
