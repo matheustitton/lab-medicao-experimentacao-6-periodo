@@ -1,0 +1,38 @@
+# Janela de observação: o professor fixa as datas na abertura do Lab03S01.
+# TROCAR pelas datas oficiais antes de coletar (12 meses).
+janela:
+  inicio: "2025-10-01"
+  fim: "2026-09-30"
+
+alvo_amostra: 100          # S01 = 100 repositórios; S02 = 350 (folga sobre o mínimo de 300)
+min_releases: 5
+min_runs: 50
+semente: 42
+
+# Fatias da busca por estrelas (a Search API devolve no máximo 1.000 resultados por consulta)
+faixas_estrelas:
+  - "1000..1199"
+  - "1200..1499"
+  - "1500..1999"
+  - "2000..2999"
+  - "3000..4999"
+  - "5000..9999"
+  - "10000..19999"
+  - "20000..49999"
+  - ">=50000"
+
+caminho_cache: data/cache.sqlite
+caminho_estado: data/estado.sqlite
+saida_dir: data/saida
+rotulos_dir: rotulos
+
+max_paginas_busca: 10
+max_paginas_releases: 10
+max_paginas_compare: 30
+
+janela_corretiva_dias: 7
+heuristica: v1             # versão usada no CFR (b); troque após a validação
+
+amostra_ouro_n: 60
+releases_por_repo_ouro: 5
+avaliadores: [matheus, pedro, murilo]
