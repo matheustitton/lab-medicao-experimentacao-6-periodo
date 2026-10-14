@@ -1,11 +1,15 @@
+import sys
+
 import pandas as pd
+import pytest
 
 from pipeline.estado import RepoStore
+from validacao import amostra
 from validacao.amostra import gerar_planilhas, sortear_releases, sortear_repos
 
 
-def store_com(repos):
-    s = RepoStore(":memory:")
+def store_com(repos, caminho=":memory:"):
+    s = RepoStore(caminho)
     s.adicionar_candidatos([{"repo": r} for r in repos])
     for r in repos:
         s.salvar_coleta(r, {"releases": [
@@ -29,3 +33,26 @@ def test_sorteio_e_planilhas_reprodutiveis_e_sem_vazar_heuristica(tmp_path):
     assert "heuristica" not in " ".join(a.columns).lower()
     assert a["url_comparacao"].str.contains("/compare/").all()
     assert len(pd.read_csv(tmp_path / "rotulos_p_repos.csv")) == 10
+
+
+def config_de(tmp_path, n=4):
+    cfg = tmp_path / "config.yaml"
+    cfg.write_text(f'janela: {{inicio: "2026-01-01", fim: "2026-12-31"}}\n'
+                   f'caminho_estado: {tmp_path / "e.sqlite"}\nrotulos_dir: {tmp_path / "rotulos"}\n'
+                   f'amostra_ouro_n: {n}\nreleases_por_repo_ouro: 3\n', encoding="utf-8")
+    return cfg
+
+
+def test_main_sorteia_a_partir_do_estado(monkeypatch, tmp_path):
+    store_com([f"o/r{i}" for i in range(8)], str(tmp_path / "e.sqlite"))
+    monkeypatch.setattr(sys, "argv", ["x", "--config", str(config_de(tmp_path))])
+    amostra.main()
+    assert len(pd.read_csv(tmp_path / "rotulos" / "rotulos_matheus_repos.csv")) == 4
+    assert len(pd.read_csv(tmp_path / "rotulos" / "amostra_ouro_releases.csv")) == 12
+
+
+def test_main_recusa_amostra_menor_que_o_necessario(monkeypatch, tmp_path):
+    store_com(["o/r0", "o/r1"], str(tmp_path / "e.sqlite"))
+    monkeypatch.setattr(sys, "argv", ["x", "--config", str(config_de(tmp_path))])
+    with pytest.raises(SystemExit, match="precisa de 4"):
+        amostra.main()
