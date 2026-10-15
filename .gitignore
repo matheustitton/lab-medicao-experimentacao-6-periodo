@@ -6,4 +6,4 @@ htmlcov/
 .venv/
 .env
 # cache da API: nunca commitar (pesado). As saídas em data/saida/ SÃO commitadas (dataset, funil, kappa).
-data/*.sqlite
+#data/*.sqlite
