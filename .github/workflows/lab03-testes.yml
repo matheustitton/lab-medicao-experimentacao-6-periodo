@@ -1,8 +1,19 @@
-name: testes
-on: [push, pull_request]
+name: lab03-testes
+on:
+  push:
+    paths:
+      - "lab03-metricas-dora/**"
+      - ".github/workflows/lab03-testes.yml"
+  pull_request:
+    paths:
+      - "lab03-metricas-dora/**"
+      - ".github/workflows/lab03-testes.yml"
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lab03-metricas-dora
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
