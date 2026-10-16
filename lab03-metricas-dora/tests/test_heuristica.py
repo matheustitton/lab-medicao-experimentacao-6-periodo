@@ -40,6 +40,6 @@ def test_versoes_da_heuristica():
 
 
 def test_registro_de_heuristicas():
-    assert set(HEURISTICAS) == {"v1", "v2", "v3"} and obter_heuristica("v2") is v2
+    assert {"v1", "v2", "v3"} <= set(HEURISTICAS) and obter_heuristica("v2") is v2
     with pytest.raises(ValueError):
         obter_heuristica("v99")

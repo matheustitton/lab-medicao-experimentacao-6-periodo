@@ -1,6 +1,6 @@
 # Histórico das versões da heurística de release corretiva
 
-Preencher após rodar `python -m validacao.avaliacao_heuristica` (uma linha por versão testada).
+Preencher após rodar `python -m validacao.avaliacao_heuristica` (uma linha por versão testada). Meta do enunciado: F1 ≥ 0,70; se nenhuma versão chegar lá, refinar em `metricas/heuristica.py` (acrescentar v4, v5... em `HEURISTICAS`), reavaliar e registrar **cada** versão aqui e no artigo.
 
 | Versão | Regra (resumo) | Precisão | Recall | F1 | Observação |
 |---|---|---|---|---|---|
