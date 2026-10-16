@@ -1,0 +1,4 @@
+dimensao,n_itens,kappa_fleiss,interpretacao,concordancia_bruta
+corretiva,300,0.7385,substancial,0.8067
+releases_entregas_reais,60,0.1224,leve,0.8333
+tipo_projeto,60,0.8491,quase perfeita,0.85

@@ -1,0 +1,4 @@
+versao,n,positivos_consenso,marcadas_heuristica,precisao,recall,f1,meta_f1_ok
+v1,300,134,277,0.4693,0.9701,0.6326,False
+v2,300,134,143,0.6434,0.6866,0.6643,False
+v3,300,134,170,0.5941,0.7537,0.6645,False
