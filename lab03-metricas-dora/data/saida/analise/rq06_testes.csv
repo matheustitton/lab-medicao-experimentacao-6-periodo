@@ -1,0 +1,31 @@
+fator,metrica,teste,estatistica,p_valor,efeito,tipo_efeito,n,grupos,p_holm,significativo_holm,magnitude
+linguagem,Frequência de deploy,Kruskal-Wallis,17.941939044701932,0.006378942230874683,0.06669865815874325,ε²,270,7,0.13395778684836834,False,médio
+linguagem,Lead time (a) por release,Kruskal-Wallis,21.575852153436244,0.0014448483986138302,0.08020762882318307,ε²,270,7,0.03323151316811809,True,médio
+linguagem,Lead time (b) por commit,Kruskal-Wallis,23.4508065598361,0.0006587320821239342,0.08717771955329405,ε²,270,7,0.01580956997097442,True,médio
+linguagem,CFR (a) CI,Kruskal-Wallis,5.209456187893952,0.5172432616536817,0.019366008133434767,ε²,270,7,1.0,False,pequeno
+linguagem,CFR (b) entrega,Kruskal-Wallis,15.661818597173827,0.015688943714624995,0.05822237396718895,ε²,270,7,0.2980899305778749,False,pequeno
+linguagem,Tempo de recuperação,Kruskal-Wallis,2.97431246055487,0.8120639214279001,0.012041750852448867,ε²,248,7,1.0,False,pequeno
+popularidade (estrelas),Frequência de deploy,Kruskal-Wallis,7.490749937590819,0.05779660257990064,0.02784665404308855,ε²,270,4,1.0,False,pequeno
+popularidade (estrelas),Lead time (a) por release,Kruskal-Wallis,5.893379531688083,0.11691434939642228,0.021908474095494734,ε²,270,4,1.0,False,pequeno
+popularidade (estrelas),Lead time (b) por commit,Kruskal-Wallis,3.1766037280046917,0.36518961830245916,0.011808935791839002,ε²,270,4,1.0,False,pequeno
+popularidade (estrelas),CFR (a) CI,Kruskal-Wallis,2.881412000736124,0.4102727961134912,0.010711568775970721,ε²,270,4,1.0,False,pequeno
+popularidade (estrelas),CFR (b) entrega,Kruskal-Wallis,2.1654284490363804,0.5387899497143984,0.008049919884893607,ε²,270,4,1.0,False,desprezível
+popularidade (estrelas),Tempo de recuperação,Kruskal-Wallis,1.01189477603441,0.7983738030606075,0.00409673998394498,ε²,248,4,1.0,False,desprezível
+contribuidores,Frequência de deploy,Kruskal-Wallis,2.9355187849718627,0.4016741302186845,0.010912709237813616,ε²,270,4,1.0,False,pequeno
+contribuidores,Lead time (a) por release,Kruskal-Wallis,29.495031535038834,1.7623381636960725e-06,0.10964695737932652,ε²,270,4,4.4058454092401814e-05,True,médio
+contribuidores,Lead time (b) por commit,Kruskal-Wallis,34.37063580744517,1.6545139491433087e-07,0.12777188032507497,ε²,270,4,4.301736267772603e-06,True,médio
+contribuidores,CFR (a) CI,Kruskal-Wallis,3.1848108451917274,0.36399925145276457,0.011839445521158839,ε²,270,4,1.0,False,pequeno
+contribuidores,CFR (b) entrega,Kruskal-Wallis,6.060090898817741,0.10872299234965567,0.02252821895471279,ε²,270,4,1.0,False,pequeno
+contribuidores,Tempo de recuperação,Kruskal-Wallis,7.0341106506305096,0.07081846057889825,0.028478180771783438,ε²,248,4,1.0,False,pequeno
+idade do repositório,Frequência de deploy,Kruskal-Wallis,42.15680084754983,3.7161991077804358e-09,0.15671673177527817,ε²,270,4,1.0033737591007176e-07,True,grande
+idade do repositório,Lead time (a) por release,Kruskal-Wallis,75.9104516848505,2.3118404701528536e-16,0.2821949876760242,ε²,270,4,6.935521410458561e-15,True,grande
+idade do repositório,Lead time (b) por commit,Kruskal-Wallis,65.67320078383239,3.60037670513365e-14,0.24413829287670033,ε²,270,4,1.008105477437422e-12,True,grande
+idade do repositório,CFR (a) CI,Kruskal-Wallis,6.9244321221071905,0.07434578094065662,0.025741383353558328,ε²,270,4,1.0,False,pequeno
+idade do repositório,CFR (b) entrega,Kruskal-Wallis,69.21844546828576,6.274803802500162e-15,0.2573176411460437,ε²,270,4,1.819693102725047e-13,True,grande
+idade do repositório,Tempo de recuperação,Kruskal-Wallis,15.211692023915134,0.0016443949765742008,0.06158579766767261,ε²,248,4,0.036176689484632416,True,médio
+tipo do projeto,Frequência de deploy,Kruskal-Wallis,5.258125897819936,0.15384273256816328,0.08912077792915146,ε²,60,4,1.0,False,médio
+tipo do projeto,Lead time (a) por release,Kruskal-Wallis,6.574047171645191,0.08678756544368615,0.11142452833296933,ε²,60,4,1.0,False,médio
+tipo do projeto,Lead time (b) por commit,Kruskal-Wallis,3.78129786820449,0.28606900965126025,0.06408979437634729,ε²,60,4,1.0,False,médio
+tipo do projeto,CFR (a) CI,Kruskal-Wallis,10.875678344029511,0.012417479695817638,0.18433353125473748,ε²,60,4,0.24834959391635275,False,grande
+tipo do projeto,CFR (b) entrega,Kruskal-Wallis,3.246448415028409,0.35516584290493713,0.05502454940726117,ε²,60,4,1.0,False,pequeno
+tipo do projeto,Tempo de recuperação,Kruskal-Wallis,4.852356170399645,0.18293313734494251,0.09155389000754047,ε²,54,4,1.0,False,médio
