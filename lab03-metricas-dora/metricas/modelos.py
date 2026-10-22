@@ -20,6 +20,7 @@ class Release:
     # ok | sem_anterior | indisponivel | truncado | nao_coletado
     status_compare: str = "ok"
     prerelease: bool = False
+    anterior_publicada_em: Optional[datetime] = None   # usada pela heurística v5
 
 
 @dataclass(frozen=True)

@@ -9,8 +9,13 @@ NOME_POR_PONTO = {v: k for k, v in PONTOS.items()}
 UMA_POR_MES_EM_SEMANAS = 12 / (365 / 7)   # ≈ 0,23 release/semana
 
 
+def _ausente(valor) -> bool:
+    """None ou NaN (valor vindo de um CSV/pandas): sem dado, não é Low."""
+    return valor is None or (isinstance(valor, float) and math.isnan(valor))
+
+
 def classificar_frequencia(por_semana: Optional[float]) -> Optional[str]:
-    if por_semana is None:
+    if _ausente(por_semana):
         return None
     if por_semana >= 7:
         return "Elite"
@@ -22,7 +27,7 @@ def classificar_frequencia(por_semana: Optional[float]) -> Optional[str]:
 
 
 def classificar_lead_time(horas: Optional[float]) -> Optional[str]:
-    if horas is None:
+    if _ausente(horas):
         return None
     if horas < 24:
         return "Elite"
@@ -34,7 +39,7 @@ def classificar_lead_time(horas: Optional[float]) -> Optional[str]:
 
 
 def classificar_cfr(taxa: Optional[float]) -> Optional[str]:
-    if taxa is None:
+    if _ausente(taxa):
         return None
     if taxa <= 0.15:
         return "Elite"
@@ -46,7 +51,7 @@ def classificar_cfr(taxa: Optional[float]) -> Optional[str]:
 
 
 def classificar_recuperacao(horas: Optional[float]) -> Optional[str]:
-    if horas is None:
+    if _ausente(horas):
         return None
     if horas < 1:
         return "Elite"

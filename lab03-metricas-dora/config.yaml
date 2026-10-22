@@ -31,7 +31,7 @@ max_paginas_releases: 10
 max_paginas_compare: 30
 
 janela_corretiva_dias: 7
-heuristica: v1             # versão usada no CFR (b); troque após a validação
+heuristica: v5             # escolhida na validação (ver docs/HISTORICO_HEURISTICA.md)
 
 amostra_ouro_n: 60
 releases_por_repo_ouro: 5

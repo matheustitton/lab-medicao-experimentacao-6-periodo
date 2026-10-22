@@ -1,12 +1,14 @@
-# Metodologia 
+# Metodologia — fonte de dados, janela, funil de seleção e definições operacionais
+
+> Texto da seção 2 do artigo (SBC, máx. 10 páginas no total), com os números da coleta real (`data/saida/funil_selecao.md`).
 
 ## 2.1 Fonte de dados
 
-Todos os dados vêm da API REST do GitHub, acessada por um cliente HTTP escrito pelo grupo (sem bibliotecas prontas de acesso à API). Foram usados os endpoints de busca de repositórios, workflows, releases, comparação de commits (`compare`), workflow runs e contribuidores. A coleta foi executada em `14/10/2026` com token autenticado, e todas as respostas ficam em um cache local, o que torna a coleta retomável e auditável.
+Todos os dados vêm da API REST do GitHub, acessada por um cliente HTTP escrito pelo grupo (sem bibliotecas prontas de acesso à API). Foram usados os endpoints de busca de repositórios, workflows, releases, comparação de commits (`compare`), workflow runs e contribuidores. A coleta foi executada em 14 e 15 de outubro de 2026 com token autenticado, e todas as respostas ficam em um cache local, o que torna a coleta retomável e auditável.
 
 ## 2.2 Janela de observação
 
-A janela tem 12 meses, fixada pelo enunciado. Só entram nos cálculos releases publicadas e workflow runs criados dentro dela. A primeira release da janela pode ter como release anterior uma publicada antes do início; isso é permitido apenas para obter os commits que ela inclui.
+A janela tem 12 meses, de 1º de outubro de 2025 a 30 de setembro de 2026 (UTC), fixada pelo professor. Só entram nos cálculos releases publicadas e workflow runs criados dentro dela. A primeira release da janela pode ter como release anterior uma publicada antes do início; isso é permitido apenas para obter os commits que ela inclui.
 
 ## 2.3 Seleção dos repositórios e funil
 
@@ -21,19 +23,24 @@ A janela tem 12 meses, fixada pelo enunciado. Só entram nos cálculos releases 
 
 **Funil.** A tabela abaixo é gerada automaticamente pelo pipeline (`data/saida/funil_selecao.md`).
 
-`| Etapa | Repositórios |
-|---|---|
-| candidatos (busca por estrelas) | 8499 |
-| usam GitHub Actions | 810 |
-| ≥ 5 releases na janela | 295 |
-| ≥ 50 workflow runs válidos | 230 |
-| amostra final (coleta completa) | 230 |
+A busca devolveu **8.499 candidatos**. O pipeline os processa em ordem pseudoaleatória e parou ao chegar a **270 repositórios na amostra final**, depois de examinar **1.391** candidatos (os outros 7.108 não foram examinados). O alvo de 350 não foi alcançado e o mínimo de 300 do enunciado também não; as análises usam os 270 repositórios disponíveis (ver ameaças à validade). Como os candidatos foram examinados em ordem aleatória, as taxas de passagem abaixo estimam o que aconteceria com os 8.499.
 
-| Motivo de descarte | Repositórios |
+| Etapa | Repositórios |
 |---|---|
-| releases_insuficientes | 515 |
-| runs_insuficientes | 64 |
-| sem_actions | 386 |`
+| candidatos devolvidos pela busca (≥ 1.000 estrelas) | 8.499 |
+| examinados antes de a coleta parar | 1.391 |
+| usam GitHub Actions | 941 |
+| ≥ 5 releases na janela | 349 |
+| ≥ 50 workflow runs válidos (amostra final) | 270 |
+
+| Motivo de descarte (entre os 1.391 examinados) | Repositórios |
+|---|---|
+| não usam GitHub Actions (`sem_actions`) | 450 |
+| menos de 5 releases na janela (`releases_insuficientes`) | 592 |
+| menos de 50 workflow runs válidos (`runs_insuficientes`) | 78 |
+| em processamento quando a coleta parou | 1 |
+
+Entre os examinados, 68% usam Actions (941 de 1.391); entre os que usam, 37% têm releases suficientes (349 de 941); entre esses, 77% têm runs suficientes (270 de 349).
 
 ## 2.4 Definições operacionais
 
@@ -56,7 +63,7 @@ A janela tem 12 meses, fixada pelo enunciado. Só entram nos cálculos releases 
 - **Tempo de recuperação (RQ04):** por workflow, um episódio começa na primeira falha após um sucesso e termina no próximo sucesso do mesmo workflow; tempo = `updated_at` do sucesso menos `run_started_at` da falha. Reportamos a mediana dos episódios concluídos e, separadamente, a mediana que inclui os censurados como limite inferior.
 - **Classificação DORA (RQ07, combinação C1):** cada métrica recebe 4 (Elite), 3 (High), 2 (Medium) ou 1 (Low) pelos cortes da disciplina; a classe geral é a mediana dos pontos, arredondada para baixo. Métricas sem valor ficam fora da mediana.
 
-As combinações de RQ07 que usam pré-releases (C2) e tags (C3) como unidade de entrega serão tratadas na Sprint 03; nesta etapa o dataset contém apenas C1.
+As combinações da RQ07 (C1 a C4) estão descritas na seção de resultados e usam o arquivo `data/saida/dataset_sensibilidade.csv`. A coleta **não baixou as tags** do GitHub, então a combinação com tags como unidade de entrega do exemplo do enunciado não pôde ser calculada.
 
 ## 2.5 Estatística descritiva
 
