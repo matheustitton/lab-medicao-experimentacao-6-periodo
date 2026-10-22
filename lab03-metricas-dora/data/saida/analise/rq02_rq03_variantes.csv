@@ -1,0 +1,17 @@
+indicador,valor
+lead_n,270.0
+lead_prop_a_maior_b,0.6259259259259259
+lead_razao_mediana_a_sobre_b,1.2791282457471533
+lead_wilcoxon_p,0.0001732070901139193
+lead_spearman_rho,0.7708934844241946
+lead_spearman_p,2.0053296743583472e-54
+lead_a_vs_freq_rho,-0.5856165677069789
+lead_a_vs_freq_p,2.987443335013097e-26
+lead_b_vs_freq_rho,-0.5009748757518383
+lead_b_vs_freq_p,1.4635846102230027e-18
+cfr_n,270.0
+cfr_prop_ci_maior_entrega,0.1962962962962963
+cfr_entrega_zero_prop,0.13703703703703704
+cfr_ci_zero_prop,0.06666666666666667
+cfr_spearman_rho,0.23607831943641747
+cfr_spearman_p,8.97809300736784e-05

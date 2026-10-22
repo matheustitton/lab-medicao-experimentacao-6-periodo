@@ -17,6 +17,7 @@ from metricas.tempo import parse_data
 
 
 def releases_de_coleta(coleta: Dict[str, Any]) -> List[Release]:
+    datas = {r["tag"]: parse_data(r["publicada_em"]) for r in coleta["releases"]}
     saida = []
     for r in coleta["releases"]:
         commits = tuple(
@@ -27,6 +28,7 @@ def releases_de_coleta(coleta: Dict[str, Any]) -> List[Release]:
             tag=r["tag"], publicada_em=parse_data(r["publicada_em"]),
             anterior_tag=r.get("anterior_tag"), commits=commits,
             status_compare=r.get("status_compare", "ok"), prerelease=r.get("prerelease", False),
+            anterior_publicada_em=datas.get(r.get("anterior_tag")),
         ))
     return saida
 

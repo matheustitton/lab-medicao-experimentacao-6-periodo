@@ -44,3 +44,13 @@ def test_classe_geral_com_metrica_ausente():
     c = classificar_repositorio(7, None, 0.1, 0.5)
     assert c.n_metricas == 3 and c.geral == "Elite" and c.por_metrica["lead_time"] is None
     assert classificar_repositorio(None, None, None, None).geral is None
+
+
+def test_nan_vindo_do_pandas_e_tratado_como_sem_dado_e_nao_como_low():
+    from metricas.classificacao import (
+        classificar_cfr, classificar_frequencia, classificar_lead_time, classificar_recuperacao)
+    nan = float("nan")
+    assert classificar_frequencia(nan) is None
+    assert classificar_lead_time(nan) is None
+    assert classificar_cfr(nan) is None
+    assert classificar_recuperacao(nan) is None

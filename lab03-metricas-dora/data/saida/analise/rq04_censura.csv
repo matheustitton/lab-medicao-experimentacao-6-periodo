@@ -1,0 +1,11 @@
+indicador,valor
+repos,270.0
+repos_sem_episodio,22.0
+episodios,20956.0
+episodios_censurados,140.0
+prop_episodios_censurados,0.006680664248902462
+repos_com_censura,71.0
+repos_com_10pct_ou_mais_censurados,19.0
+releases_censuradas_total,310.0
+repos_lead_negativo,22.0
+repos_teto_runs,0.0
