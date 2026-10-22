@@ -27,7 +27,9 @@ Etapas isoladas: `--etapa selecao | coleta | dataset` e `--limite N` (para teste
 | `dataset_dora.csv` | uma linha por repositório, todas as variantes das métricas |
 | `dicionario_dados.csv` / `docs/DICIONARIO_DADOS.md` | nome, tipo, unidade e fórmula de cada coluna |
 | `funil_selecao.md` | repositórios restantes em cada etapa e motivos de descarte |
-| `kappa_fleiss.csv`, `avaliacao_heuristica.csv` | resultados da validação manual |
+| `dataset_sensibilidade.csv` | métricas sob várias definições (combinações C1 a C4 da RQ07 e versões v1 a v5 da heurística) |
+| `kappa_fleiss.csv`, `avaliacao_heuristica.csv`, `validacao_cruzada_heuristica.csv` | resultados da validação manual |
+| `analise/` | tabelas (`.csv` e `.md`) e figuras (`.png`) das RQ01 a RQ08 |
 
 ## Validação manual (Sprint 02)
 
@@ -38,6 +40,23 @@ python -m validacao.concordancia --config config.yaml         # kappa de Fleiss 
 python -m validacao.avaliacao_heuristica --config config.yaml # precisão/recall/F1 de cada versão da heurística
 ```
 Protocolo completo em `docs/PROTOCOLO_VALIDACAO.md`.
+
+## Análise estatística (Sprint 03)
+
+Cada análise é um módulo reexecutável a partir dos CSVs (não precisa de token nem de rede):
+
+```bash
+python -m pipeline --etapa dataset                 # gera data/saida/dataset_dora.csv a partir de data/estado.sqlite
+python -m analise.sensibilidade_dataset            # gera data/saida/dataset_sensibilidade.csv
+python -m analise.rq01_04                          # RQ01 a RQ04, classificação DORA (C1), variantes e censura
+python -m analise.rq05                             # Spearman frequência x CFR (a e b)
+python -m analise.rq06                             # Kruskal-Wallis, epsilon², Holm, Cliff's delta, robustez da idade
+python -m analise.rq07                             # sensibilidade: % que muda de categoria e kappa ponderado
+python -m analise.rq08                             # bônus: rework rate
+python -m validacao.validacao_cruzada              # F1 da heurística fora da amostra (5 dobras por repositório)
+```
+
+Resultados e discussão em `docs/artigo/resultados_rq01_04.md`, `resultados_rq05_08.md` e `discussao.md`.
 
 ## Testes
 
@@ -50,7 +69,8 @@ pytest --cov=metricas --cov-report=term-missing   # cobertura mínima exigida: 8
 ```
 pipeline/    coleta e orquestração (cliente da API, cache, seleção, releases, runs, dataset)
 metricas/    funções puras de cálculo (lead time, CFR, recuperação, classificação) — sem rede
-validacao/   amostra-ouro, kappa de Fleiss, avaliação da heurística
+validacao/   amostra-ouro, kappa de Fleiss, avaliação e validação cruzada da heurística
+analise/     estatística das RQ01 a RQ08 (Spearman, Kruskal-Wallis, Holm, kappa ponderado)
 tests/       pytest com fixtures dos exemplos do enunciado
 docs/        dicionário de dados, protocolo de validação, histórico da heurística, rascunhos do artigo
 ```

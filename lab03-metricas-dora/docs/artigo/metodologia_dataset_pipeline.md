@@ -1,6 +1,6 @@
-# Metodologia — pipeline e dataset (Murilo, issue #96)
+# Metodologia — pipeline e dataset
 
-> Rascunho para a seção 2 do artigo (parte do pipeline). Números referentes à coleta final e ao `dataset_dora.csv` gerado a partir dela.
+> Texto da seção 2 do artigo (parte do pipeline), com os números reais.
 
 ## 2.11 Pipeline
 
@@ -9,7 +9,7 @@ O pipeline é executado por um único comando (`python -m pipeline --config conf
 - **Cliente HTTP:** escrito pelo grupo sobre `requests`. Segue o cabeçalho `Link` (`rel="next"`) para paginar, lê `X-RateLimit-Remaining` e `X-RateLimit-Reset` e espera automaticamente quando a cota está acabando ou o servidor responde 403/429 por limite de taxa. Erros 5xx e de rede são repetidos com *backoff* exponencial (1 s, 2 s, 4 s, 8 s) até 5 tentativas.
 - **Cache e retomada:** cada resposta é gravada em SQLite (chave = caminho + parâmetros). Um segundo banco guarda a etapa alcançada por cada repositório e o motivo de descarte. Interromper e rodar de novo continua de onde parou, sem repetir chamadas.
 - **Coletores:** releases (com a release anterior de cada uma), commits entre releases (`compare` paginado de 100 em 100) e workflow runs.
-- **Métricas:** funções puras, sem acesso à rede, testadas com pytest (127 testes; cobertura do módulo de métricas de 100%, mínimo exigido de 80%), executadas a cada push pelo GitHub Actions do próprio repositório.
+- **Métricas:** funções puras, sem acesso à rede, testadas com pytest (196 testes; cobertura de 100% do módulo de métricas, mínimo exigido de 80%), executadas a cada push pelo GitHub Actions do próprio repositório.
 
 ## 2.12 Limites da API e como foram tratados
 
@@ -34,7 +34,7 @@ O pipeline é executado por um único comando (`python -m pipeline --config conf
 
 O arquivo `data/saida/dataset_dora.csv` tem uma linha por repositório e 37 colunas, com todas as variantes de RQ01 a RQ04, os contadores de censura e de exclusão e a classe DORA da combinação C1. O dicionário de dados (nome, tipo, unidade e fórmula ou origem de cada coluna) está em `docs/DICIONARIO_DADOS.md` e em `data/saida/dicionario_dados.csv`, gerado da mesma fonte que as colunas do CSV, o que impede que os dois divirjam.
 
-A amostra final tem 237 repositórios (mínimo exigido: 300), de 24 linguagens (as mais frequentes: TypeScript, 64; Python, 39; Go, 34; Rust, 21), com mediana de 15.338 estrelas e 158 contribuidores. Nenhum repositório atingiu o teto de workflow runs (`teto_runs_atingido` = 0).
+A amostra final tem **270 repositórios** (o mínimo exigido era 300; ver ameaças à validade), de 25 linguagens (TypeScript 73, Python 46, Go 38, Rust 25, JavaScript 19), com mediana de 15.705 estrelas (IQR 4.816 a 36.418), 168 contribuidores (IQR 64 a 466) e 6,6 anos de idade (2.394 dias). Os 270 repositórios somam 13.664 releases publicadas, 1.046.247 commits comparados e cerca de 800 mil workflow runs válidos. Pré-releases (4.119 em 98 repositórios) ficam fora da definição principal. Do total de releases, 58 são a primeira da história (sem release anterior), 12 tiveram o `compare` indisponível e 1.659 (12%) não trouxeram commits novos; todas ficam fora do lead time. Em 22 repositórios existe commit com data posterior à release (`n_lead_negativos`), efeito de *rebase* ou *squash*; eles foram mantidos.
 
 ## 2.15 Reprodutibilidade
 
