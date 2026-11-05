@@ -1,0 +1,5 @@
+# Arquivos gerados sempre em LF, para rodar.py não aparecer como alteração no Windows.
+dados/*.json text eol=lf
+dados/*.csv text eol=lf
+saida/*.json text eol=lf
+dashboard/*.html text eol=lf
