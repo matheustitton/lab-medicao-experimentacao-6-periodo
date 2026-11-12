@@ -53,6 +53,20 @@ Os valores simulados são a mediana de 20.000 amostras de 30 PRs (o percentual u
 
 **Limitação:** com σ = 1,64, a lognormal não reproduz o excesso de PRs muito rápidos. Uma única lognormal não consegue acertar as duas caudas ao mesmo tempo. Priorizamos a cauda direita, que é a que afeta a média e a variância do Welch. O Mann-Whitney depende só da ordem dos dados e é sensível a σ de outro jeito, por isso a S02 repete a simulação com os dois valores.
 
+## Situações simuladas na S02 (Q1, Q2 e Q3)
+
+Cada situação roda 10.000 conjuntos para cada redução da mediana (0%, 10%, ..., 70%; `k = 1 − redução`), com α = 0,05 e 0,01. A redução 0% é o erro tipo I (Q1); as demais formam a curva de poder (Q2).
+
+| Situação | σ | n por grupo | O que viola |
+|---|---:|---:|---|
+| Cenário-base | 1,64 | 30 | nada além da assimetria real |
+| Cauda pesada | 2,77 | 30 | normalidade: poucos PRs enormes dominam média e variância |
+| Outliers | 1,64 | 30 | 5% dos PRs "esquecidos" levam 20 vezes mais |
+| Amostra pequena | 1,64 | 10 | o teorema central do limite ainda não ajuda o Welch |
+| Quase simétrico (contraste) | 0,20 | 30 | nenhuma: é a situação mais favorável ao Welch |
+
+O contraste não é o cenário real. Ele existe para mostrar em que condição a vantagem do Mann-Whitney deixaria de existir.
+
 ## Expectativa antes de simular
 
 **Esperamos que o Mann-Whitney tenha mais poder que o Welch.** Os tempos são muito assimétricos, e poucos PRs longos inflam a variância que entra no denominador da estatística t, reduzindo a chance de detectar o efeito. O Mann-Whitney usa postos, então o maior PR da amostra tem o mesmo peso, seja de 100 h ou de 470 h.
