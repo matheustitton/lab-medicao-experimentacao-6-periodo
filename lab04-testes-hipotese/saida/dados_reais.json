@@ -1,0 +1,42 @@
+{
+  "alfa": 0.05,
+  "n": {
+    "sem_bot": 30,
+    "com_bot": 30
+  },
+  "media": {
+    "sem_bot": 64.99291333333333,
+    "com_bot": 64.65177
+  },
+  "mediana": {
+    "sem_bot": 16.916400000000003,
+    "com_bot": 11.16335
+  },
+  "razao_medianas": 0.6599128656215268,
+  "ic_diferenca_medias": [
+    -56.489841999999996,
+    56.83064408333333
+  ],
+  "ic_diferenca_medianas": [
+    -35.998599999999996,
+    27.10757749999997
+  ],
+  "welch": {
+    "estatistica": 0.01165093234189038,
+    "p_valor": 0.99074418759361,
+    "efeito": 0.0029691895121409023,
+    "nome_efeito": "g de Hedges",
+    "gl": 57.86593330945183,
+    "magnitude": "desprezível",
+    "rejeita": false
+  },
+  "mann_whitney": {
+    "estatistica": 482.0,
+    "p_valor": 0.641423522520332,
+    "efeito": 0.07111111111111112,
+    "nome_efeito": "correlação rank-bisserial",
+    "z": 0.4657094007013809,
+    "magnitude": "desprezível",
+    "rejeita": false
+  }
+}
