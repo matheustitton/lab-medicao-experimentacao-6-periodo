@@ -172,8 +172,9 @@ def grafico_g4(simulacoes: dict) -> go.Figure:
         shapes=layouts[primeiro]["shapes"],
         annotations=layouts[primeiro]["annotations"],
         updatemenus=_botoes_alfa(alfas, visiveis, layouts),
-        margin={"t": 96, "b": 110},
-        legend={"y": -0.08},
+        margin={"t": 96, "b": 90},
+        # O sexto painel fica vazio: a legenda vai para lá, longe dos eixos.
+        legend={"orientation": "v", "x": 0.72, "xanchor": "left", "y": 0.36, "yanchor": "top"},
     )
     for anotacao in fig.layout.annotations[: len(situacoes)]:
         anotacao.font = {"size": 13, "color": cores.TINTA}
@@ -189,4 +190,46 @@ def grafico_g4(simulacoes: dict) -> go.Figure:
             continue
         eixo_x.title.text = "Redução da mediana (%)" if indice in ultimos_por_coluna else None
         eixo_y.title.text = "Poder" if indice % COLUNAS_G4 == 0 else None
+    return fig
+
+
+def grafico_amostra(amostra: dict) -> go.Figure:
+    """Poder de cada teste para detectar o efeito observado, conforme cresce o n por grupo."""
+    tamanhos = amostra["tamanhos"]
+    fig = go.Figure()
+    for teste in NOMES_TESTES:
+        fig.add_scatter(
+            x=tamanhos,
+            y=amostra["poder"][teste],
+            mode="lines+markers",
+            name=NOMES_TESTES[teste],
+            line={"color": CORES_TESTES[teste], "width": 2, "dash": TRACOS[teste]},
+            marker={"symbol": MARCADORES[teste], "size": 7},
+            hovertemplate="%{x} PRs por grupo<br>poder %{y:.1%}<extra>" + NOMES_TESTES[teste] + "</extra>",
+        )
+    alvo = amostra["poder_alvo"]
+    n_real = tamanhos[0]
+    estilizar(
+        fig,
+        f"Poder para detectar a redução observada ({_pct(amostra['reducao_observada'], 0)} na mediana)",
+        "PRs por grupo",
+        "Proporção de rejeições (poder)",
+    )
+    fig.update_layout(
+        height=400,
+        shapes=[
+            {"type": "line", "xref": "paper", "x0": 0, "x1": 1, "y0": alvo, "y1": alvo,
+             "line": {"color": cores.TINTA_FRACA, "width": 1, "dash": "dash"}},
+            {"type": "line", "yref": "paper", "x0": n_real, "x1": n_real, "y0": 0, "y1": 1,
+             "line": {"color": cores.TINTA_FRACA, "width": 1, "dash": "dot"}},
+        ],
+        annotations=[
+            {"xref": "paper", "x": 1, "y": alvo, "text": f"meta de {_pct(alvo, 0)}", "showarrow": False,
+             "xanchor": "right", "yanchor": "bottom", "font": {"color": cores.TINTA_SECUNDARIA, "size": 11}},
+            {"x": n_real, "yref": "paper", "y": 1, "text": f"n coletado: {n_real}", "showarrow": False,
+             "xanchor": "left", "yanchor": "top", "xshift": 4, "font": {"color": cores.TINTA_SECUNDARIA, "size": 11}},
+        ],
+    )
+    fig.update_yaxes(range=[0, 1.02], tickformat=".0%", dtick=0.2)
+    fig.update_xaxes(rangemode="tozero")
     return fig

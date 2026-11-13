@@ -7,10 +7,12 @@ Uso: python -m lab04.dashboard
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import plotly
 import plotly.graph_objects as go
 from scipy import stats
 
@@ -21,7 +23,8 @@ from lab04.caminhos import (
 from lab04.exemplo import formatar_numero as fmt
 from lab04.exemplo import formatar_p
 from lab04.graficos import grafico_g1, grafico_g2, simular_estatisticas_h0
-from lab04.graficos_s02 import NOMES_TESTES, grafico_g3, grafico_g4
+from lab04.graficos_s02 import NOMES_TESTES, grafico_amostra, grafico_g3, grafico_g4
+from lab04.interativo import SCRIPT, dados_prs, html_explorador, html_simulador, payload
 from lab04.simulacoes import margem_monte_carlo
 
 LINK_REPOSITORIO = "https://github.com/matheustitton/lab01-repositorios-populares"
@@ -43,55 +46,7 @@ TITULOS_SECOES = [
     "7. Conclusão",
 ]
 
-CSS = f"""
-:root {{
-  color-scheme: light;
-  --superficie: {cores.SUPERFICIE};
-  --fundo: {cores.FUNDO_PAGINA};
-  --tinta: {cores.TINTA};
-  --tinta-sec: {cores.TINTA_SECUNDARIA};
-  --tinta-fraca: {cores.TINTA_FRACA};
-  --grade: {cores.GRADE};
-}}
-* {{ box-sizing: border-box; }}
-body {{
-  margin: 0;
-  background: var(--fundo);
-  color: var(--tinta);
-  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
-}}
-main, header {{ max-width: 1120px; margin: 0 auto; padding: 0 16px; }}
-header {{ padding-top: 32px; }}
-h1 {{ font-size: 1.75rem; line-height: 1.2; margin: 0 0 4px; text-wrap: balance; }}
-h2 {{ font-size: 1.25rem; margin: 0 0 12px; }}
-h3 {{ font-size: 1rem; margin: 20px 0 8px; }}
-a {{ color: #1c5cab; }}
-.subtitulo {{ color: var(--tinta-sec); margin: 0 0 12px; }}
-.links {{ display: flex; flex-wrap: wrap; gap: 4px 24px; margin: 0 0 24px; padding: 0; list-style: none; }}
-.a-preencher {{ color: var(--tinta-sec); font-style: italic; }}
-section {{
-  background: var(--superficie);
-  border: 1px solid var(--grade);
-  border-radius: 8px;
-  padding: 24px;
-  margin-bottom: 16px;
-}}
-section > p {{ max-width: 76ch; }}
-section > p:last-child {{ margin-bottom: 0; }}
-.hipoteses {{ margin: 0 0 12px; padding-left: 20px; max-width: 76ch; }}
-.graficos {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }}
-.graficos > div {{ min-width: 0; }}
-.rolagem {{ overflow-x: auto; margin: 12px 0; }}
-table {{ border-collapse: collapse; width: 100%; font-size: 0.875rem; }}
-caption {{ text-align: left; color: var(--tinta-sec); padding-bottom: 8px; }}
-th, td {{ padding: 6px 12px 6px 0; border-bottom: 1px solid var(--grade); text-align: right; white-space: nowrap; }}
-td {{ font-variant-numeric: tabular-nums; }}
-th:first-child, td:first-child, .texto {{ text-align: left; }}
-td.texto {{ white-space: normal; min-width: 180px; }}
-footer {{ color: var(--tinta-sec); font-size: 0.875rem; text-align: center; padding: 8px 16px 32px; }}
-@media (max-width: 900px) {{ .graficos {{ grid-template-columns: minmax(0, 1fr); }} }}
-@media (max-width: 600px) {{ section {{ padding: 16px; }} h1 {{ font-size: 1.5rem; }} }}
-"""
+CSS = (Path(__file__).with_name("dashboard.css")).read_text(encoding="utf-8")
 
 
 def resumir_amostra(horas: np.ndarray) -> dict:
@@ -115,13 +70,36 @@ def _data_br(timestamp: str) -> str:
     return f"{dia}/{mes}/{ano}"
 
 
-def _figura_html(fig: go.Figure, div_id: str, carregar_plotly: bool) -> str:
-    return fig.to_html(
+FONTE_TEXTO = '"Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif'
+FONTE_TITULO = '"Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif'
+PERGUNTAS_POR_SECAO = ["1 e 2", "3 e 4", "5, 6 e 7", "8 e 9", "10, 11 e 12", "14", "13 e 15"]
+
+
+def _rotulo_perguntas(indice: int) -> str:
+    numeros = PERGUNTAS_POR_SECAO[indice]
+    return ("perguntas " if " e " in numeros else "pergunta ") + numeros
+
+
+def _tema(fig: go.Figure) -> go.Figure:
+    """Mesma tipografia e superfície da página em todos os gráficos."""
+    fig.update_layout(
+        font={"family": FONTE_TEXTO, "size": 13},
+        title={"font": {"family": FONTE_TITULO, "size": 16, "color": cores.TINTA}},
+        paper_bgcolor="#ffffff",
+        plot_bgcolor="#ffffff",
+        hoverlabel={"bgcolor": "#ffffff", "bordercolor": cores.EIXO, "font": {"family": FONTE_TEXTO, "color": cores.TINTA}},
+    )
+    return fig
+
+
+def _figura_html(fig: go.Figure, div_id: str, carregar_plotly: bool = False) -> str:
+    return _tema(fig).to_html(
         full_html=False,
-        include_plotlyjs="cdn" if carregar_plotly else False,
+        include_plotlyjs=False,
         div_id=div_id,
         default_width="100%",
-        config={"responsive": True, "displaylogo": False},
+        config={"responsive": True, "displaylogo": False,
+                "modeBarButtonsToRemove": ["select2d", "lasso2d", "autoScale2d", "toggleSpikelines"]},
     )
 
 
@@ -168,24 +146,94 @@ def _tabela_exemplo(exemplo: dict) -> str:
     )
 
 
-def _cabecalho() -> str:
+def _cabecalho(simulacoes: dict, reais: dict) -> str:
     dashboard = (
         f'<a href="{LINK_DASHBOARD}">Dashboard publicado</a>' if LINK_DASHBOARD
-        else "Dashboard: gerado localmente com <code>python rodar.py</code>"
+        else "Dashboard: gerado com <code>python rodar.py</code>"
     )
     projects = (
         f'<a href="{LINK_PROJECTS}">GitHub Projects</a>' if LINK_PROJECTS
         else '<span class="a-preencher">GitHub Projects: link a preencher</span>'
     )
-    return f"""<header>
-  <h1>Testes de hipótese por dentro: t de Welch × Mann-Whitney</h1>
-  <p class="subtitulo">Laboratório 04 · Laboratório de Experimentação de Software · Matheus, Pedro e Murilo · Sprint 2</p>
+    base = _situacao(simulacoes, "base")
+    alfa = str(simulacoes["alfas"][0])
+    reducoes = simulacoes["reducoes"]
+    meio = 0.5 if 0.5 in reducoes else reducoes[-1]
+    par = lambda mw, w: (  # noqa: E731
+        f'<span class="par"><span class="amostra-cor mw"></span>Mann-Whitney <b>{mw}</b></span>'
+        f'<span class="par"><span class="amostra-cor welch"></span>Welch <b>{w}</b></span>'
+    )
+    rejeitou = [NOMES_TESTES[t] for t in ("welch", "mann_whitney") if reais[t]["rejeita"]]
+    veredito_real = "nenhum teste rejeita H₀" if not rejeitou else f"rejeitam H₀: {_lista(rejeitou)}"
+    return f"""<header class="topo">
+  <p class="disciplina">Laboratório 04 de Experimentação de Software, PUC Minas. Murilo, Pedro e Matheus, Sprint 2.</p>
+  <h1><span class="nome welch">t de Welch</span> <span class="versus">×</span> <span class="nome mw">Mann-Whitney</span></h1>
+  <p class="pergunta">Qual dos dois testes responde melhor se um bot de revisão de código muda o tempo até o merge dos PRs?</p>
   <ul class="links">
-    <li>{dashboard} (ou localmente com <code>python rodar.py</code>)</li>
+    <li>{dashboard}</li>
     <li><a href="{LINK_REPOSITORIO}">Repositório</a></li>
     <li>{projects}</li>
   </ul>
+  <dl class="resumo">
+    <div><dt>Erro tipo I, cenário-base</dt><dd>{par(_pct(base["erro_tipo1"]["mann_whitney"][alfa]), _pct(base["erro_tipo1"]["welch"][alfa]))}</dd><dd class="contexto">o prometido é {_pct(float(alfa), 0)}</dd></div>
+    <div><dt>Poder com a mediana {"pela metade" if meio == 0.5 else f"{_pct(meio, 0)} menor"}</dt><dd>{par(_pct(_poder_em(base, reducoes, "mann_whitney", meio)), _pct(_poder_em(base, reducoes, "welch", meio)))}</dd><dd class="contexto">em {fmt(simulacoes["repeticoes"] / 1000, 0)} mil conjuntos simulados</dd></div>
+    <div><dt>Dados reais, {reais["n"]["sem_bot"] + reais["n"]["com_bot"]} PRs</dt><dd class="destaque">{veredito_real}</dd><dd class="contexto">p = {formatar_p(reais["mann_whitney"]["p_valor"]).removeprefix("p = ")} (Mann-Whitney) e {formatar_p(reais["welch"]["p_valor"]).removeprefix("p = ")} (Welch)</dd></div>
+    <div><dt>Recomendação</dt><dd class="destaque"><span class="amostra-cor mw"></span>Mann-Whitney</dd><dd class="contexto">para tempos assimétricos como este</dd></div>
+  </dl>
 </header>"""
+
+
+def _trilha() -> str:
+    itens = "".join(
+        f'<li><a href="#secao-{i}"><span class="numero">{i}</span><span class="titulo-trilha">{titulo.split(". ", 1)[1]}</span>'
+        f'<span class="perguntas-trilha">{_rotulo_perguntas(i - 1)}</span></a></li>'
+        for i, titulo in enumerate(TITULOS_SECOES, start=1)
+    )
+    return f"""<nav class="trilha" aria-label="Seções do dashboard">
+  <p class="trilha-titulo">Roteiro</p>
+  <ol>{itens}</ol>
+  <button type="button" id="modo-apresentacao" class="botao-apresentacao" aria-pressed="false">Modo apresentação</button>
+  <p class="trilha-dica">Use as setas ← e → para ir de uma seção a outra.</p>
+</nav>"""
+
+
+def _teses(tabela: pd.DataFrame, simulacoes: dict, reais: dict) -> list[str]:
+    real = resumir_amostra(_horas_reais(tabela, "sem_bot"))
+    base = _situacao(simulacoes, "base")
+    alfa = str(simulacoes["alfas"][0])
+    assimetricas = [s for s in simulacoes["situacoes"] if s["chave"] != "quase_simetrico"]
+    mw_ganha = all(
+        mw >= w for s in assimetricas
+        for mw, w in zip(s["poder"]["mann_whitney"][alfa][1:], s["poder"]["welch"][alfa][1:])
+    )
+    welch_t1 = base["erro_tipo1"]["welch"][alfa]
+    nenhum = not reais["welch"]["rejeita"] and not reais["mann_whitney"]["rejeita"]
+    return [
+        "Um bot de revisão muda o tempo até o merge dos PRs?",
+        f"Os tempos são muito assimétricos: sem bot, a média é {fmt(real['media'] / real['mediana'], 1)} vezes a mediana.",
+        "O Welch olha os valores em horas; o Mann-Whitney olha só a ordem.",
+        (f"Com H₀ verdadeira, o Welch rejeita menos do que promete: {_pct(welch_t1)} em vez de {_pct(float(alfa), 0)}."
+         if welch_t1 < float(alfa) else f"Com H₀ verdadeira, o Welch rejeita {_pct(welch_t1)} das vezes."),
+        ("Em todas as situações assimétricas, o Mann-Whitney detecta o efeito com mais frequência."
+         if mw_ganha else "Na maior parte das situações assimétricas, o Mann-Whitney detecta melhor o efeito."),
+        ("Nenhum teste rejeita H₀, mas 30 PRs por grupo são poucos para concluir que o bot não tem efeito."
+         if nenhum else "Os testes encontram diferença nos dados reais."),
+        "Para o tempo até o merge, a recomendação é o Mann-Whitney.",
+    ]
+
+
+def _abrir_secoes(secoes: list[str], teses: list[str]) -> list[str]:
+    """Põe, logo abaixo de cada título, as perguntas que a seção responde e a frase-resumo."""
+    abertas = []
+    for i, (html, tese) in enumerate(zip(secoes, teses)):
+        titulo = f"<h2>{TITULOS_SECOES[i]}</h2>"
+        abertas.append(html.replace(
+            titulo,
+            f'<div class="cabeca-secao">{titulo}<p class="perguntas">{_rotulo_perguntas(i).capitalize()}</p></div>'
+            f'\n  <p class="tese">{tese}</p>',
+            1,
+        ))
+    return abertas
 
 
 def _secao_cenario(tabela: pd.DataFrame) -> str:
@@ -217,13 +265,15 @@ def _secao_dados(tabela: pd.DataFrame, exemplo: dict, parametros: dict, graficos
 </section>"""
 
 
-def _secao_testes(exemplo: dict, simulados: dict[str, np.ndarray], graficos: str) -> str:
+def _secao_testes(exemplo: dict, simulados: dict[str, np.ndarray], graficos: str, explorador: str) -> str:
     alfa = exemplo["alfa"]
     critico_t = stats.t(exemplo["welch"]["gl"]).isf(alfa / 2)
     critico_z = stats.norm.isf(alfa / 2)
     repeticoes = f"{len(simulados['welch']):,}".replace(",", ".")
     return f"""<section id="secao-3">
   <h2>{TITULOS_SECOES[2]}</h2>
+  {explorador}
+  <h3>A estatística de cada teste quando H₀ é verdadeira</h3>
   <div class="graficos">{graficos}</div>
   <p>O Welch compara médias, dividindo a diferença entre elas pelo erro-padrão, e o Mann-Whitney compara postos, com U padronizado em z. Como o teste é bicaudal, a região de rejeição fica nas duas pontas, além de ±{fmt(critico_t)} no Welch e ±{fmt(critico_z)} no Mann-Whitney, onde a estatística cairia só {fmt(100 * alfa, 0)}% das vezes se H₀ fosse verdadeira. O p-valor é a área colorida: a probabilidade, supondo H₀ verdadeira, de obter uma estatística tão extrema quanto a do exemplo ou mais, e não a probabilidade de H₀ ser verdadeira. O histograma cinza mostra a estatística em {repeticoes} conjuntos simulados sob H₀: no Mann-Whitney ele acompanha a curva teórica, e no Welch se afasta dela, com picos perto de ±1, porque um único PR muito longo domina tanto a diferença de médias quanto o erro-padrão.</p>
   <h3>Exemplo: os dois testes em um conjunto simulado</h3>
@@ -288,7 +338,7 @@ def _frase_80(base: dict, reducoes: list[float]) -> str:
             f"com redução de {_pct(reducao, 0)}.")
 
 
-def _secao_poder(simulacoes: dict, grafico: str) -> str:
+def _secao_poder(simulacoes: dict, grafico: str, simulador: str) -> str:
     reducoes = simulacoes["reducoes"]
     base = _situacao(simulacoes, "base")
     cauda = _situacao(simulacoes, "cauda_pesada")
@@ -307,6 +357,7 @@ def _secao_poder(simulacoes: dict, grafico: str) -> str:
   <h2>{TITULOS_SECOES[4]}</h2>
   {grafico}
   <p>{vantagem}, o <strong>Mann-Whitney detecta melhor o efeito</strong>, e a distância cresce com o tamanho do efeito: no cenário-base, quando o bot corta a mediana pela metade, ele rejeita H₀ em {_pct(_poder_em(base, reducoes, "mann_whitney", meio))} dos conjuntos, contra {_pct(_poder_em(base, reducoes, "welch", meio))} do Welch. Na cauda pesada o Welch quase não sai do lugar (no máximo {_pct(max_welch_cauda)}), porque os PRs gigantes escondem qualquer diferença nas médias. A vantagem só muda de lado com dados quase simétricos, e por pouco: com redução de {_pct(menor, 0)}, Welch {_pct(_poder_em(contraste, reducoes, "welch", menor))} × Mann-Whitney {_pct(_poder_em(contraste, reducoes, "mann_whitney", menor))}. {_frase_80(base, reducoes)} Com α = {fmt(alfa_rigido)} (botão no gráfico), o erro tipo I cai para perto de 1%, mas o poder cai junto: no cenário-base, com redução de 50%, o Mann-Whitney vai a {_pct(_poder_em(base, reducoes, "mann_whitney", meio, alfa_rigido))} e o Welch a {_pct(_poder_em(base, reducoes, "welch", meio, alfa_rigido))}.</p>
+  {simulador}
 </section>"""
 
 
@@ -359,7 +410,7 @@ def _faixa_n(amostra: dict, teste: str) -> str:
     return f"entre {tamanhos[indice - 1]:,} e {n:,}".replace(",", ".")
 
 
-def _secao_dados_reais(reais: dict, amostra: dict) -> str:
+def _secao_dados_reais(reais: dict, amostra: dict, grafico_n: str) -> str:
     mediana_a, mediana_b = reais["mediana"]["sem_bot"], reais["mediana"]["com_bot"]
     media_a, media_b = reais["media"]["sem_bot"], reais["media"]["com_bot"]
     ic_med = reais["ic_diferenca_medianas"]
@@ -377,7 +428,8 @@ def _secao_dados_reais(reais: dict, amostra: dict) -> str:
   <p>{concordancia} As médias são praticamente iguais ({fmt(media_a, 1)} h sem bot e {fmt(media_b, 1)} h com bot), mas a mediana caiu de {fmt(mediana_a, 1)} h para {fmt(mediana_b, 1)} h ({_pct(1 - reais["razao_medianas"], 0)} a menos). Isso mostra que os testes respondem perguntas diferentes: o Welch olha a média, que é a mesma, e o Mann-Whitney olha a ordem, que mudou um pouco. Na prática, a diferença de medianas tem intervalo de confiança bootstrap de {fmt(ic_med[0], 1)} h a {fmt(ic_med[1], 1)} h: o bot pode tanto adiantar o merge em mais de um dia quanto atrasá-lo, então não dá para afirmar importância prática em nenhuma direção.</p>
   <h3>Para discutir: o tamanho da amostra</h3>
   <p>Não rejeitar H₀ não prova que o bot não tem efeito. Se a redução real fosse a observada ({_pct(1 - reais["razao_medianas"], 0)} na mediana), com {reais["n"]["sem_bot"]} PRs por grupo o Mann-Whitney a detectaria só {_pct(poder_real["mann_whitney"], 0)} das vezes e o Welch {_pct(poder_real["welch"], 0)}. Para chegar a 80% de poder seriam necessários {_faixa_n(amostra, "mann_whitney")} PRs por grupo com Mann-Whitney e {_faixa_n(amostra, "welch")} com Welch. No formbricks isso significaria janelas de vários meses antes e depois do bot, o que mistura outras mudanças do projeto: a amostra pequena é a principal limitação deste resultado. Com amostras grandes vale o contrário: quase qualquer diferença vira "significativa", e o que importa passa a ser o tamanho do efeito.</p>
-  {_tabela_amostra(amostra)}
+  {grafico_n}
+  <details class="tabela-recolhida"><summary>Ver os valores em tabela</summary>{_tabela_amostra(amostra)}</details>
 </section>"""
 
 
@@ -404,35 +456,49 @@ def gerar_html(
 ) -> str:
     g1 = grafico_g1(tabela, exemplo)
     g2 = grafico_g2(exemplo, simulados)
-    html_g1 = "".join(
-        f"<div>{_figura_html(fig, f'g1-{i}', carregar_plotly=i == 0)}</div>" for i, fig in enumerate(g1)
-    )
-    html_g2 = "".join(f"<div>{_figura_html(fig, f'g2-{i}', carregar_plotly=False)}</div>" for i, fig in enumerate(g2))
-    html_g3 = _figura_html(grafico_g3(simulacoes), "g3", carregar_plotly=False)
-    html_g4 = _figura_html(grafico_g4(simulacoes), "g4", carregar_plotly=False)
-    secoes = [
+    for fig in [*g1, *g2]:
+        # Legenda longa embaixo: mais espaço para não encostar no título do eixo x.
+        fig.update_layout(height=520, margin={"b": 170}, legend={"y": -0.3})
+    html_g1 = "".join(f"<div>{_figura_html(fig, f'g1-{i}')}</div>" for i, fig in enumerate(g1))
+    html_g2 = "".join(f"<div>{_figura_html(fig, f'g2-{i}')}</div>" for i, fig in enumerate(g2))
+    html_g3 = _figura_html(grafico_g3(simulacoes), "g3")
+    html_g4 = _figura_html(grafico_g4(simulacoes), "g4")
+    html_n = _figura_html(grafico_amostra(amostra), "g-amostra")
+    prs = dados_prs(tabela, parametros["semente"])
+    secoes = _abrir_secoes([
         _secao_cenario(tabela),
         _secao_dados(tabela, exemplo, parametros, html_g1),
-        _secao_testes(exemplo, simulados, html_g2),
+        _secao_testes(exemplo, simulados, html_g2, html_explorador(prs)),
         _secao_erro_tipo1(simulacoes, html_g3),
-        _secao_poder(simulacoes, html_g4),
-        _secao_dados_reais(reais, amostra),
+        _secao_poder(simulacoes, html_g4, html_simulador(simulacoes)),
+        _secao_dados_reais(reais, amostra, html_n),
         _secao_conclusao(simulacoes, reais),
-    ]
+    ], _teses(tabela, simulacoes, reais))
     return f"""<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lab04: Welch × Mann-Whitney</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
 <style>{CSS}</style>
+<script src="plotly.min.js"></script>
 </head>
 <body>
-{_cabecalho()}
+<div class="pagina">
+{_trilha()}
+<div class="coluna">
+{_cabecalho(simulacoes, reais)}
 <main>
 {chr(10).join(secoes)}
 </main>
-<footer>Gerado por <code>python rodar.py</code> com semente {parametros["semente"]}.</footer>
+<footer>Gerado por <code>python rodar.py</code> com semente {parametros["semente"]}. Todos os números dos textos vêm dos mesmos arquivos dos gráficos.</footer>
+</div>
+</div>
+<script id="dados-dashboard" type="application/json">{payload(prs, simulacoes)}</script>
+<script>{SCRIPT}</script>
 </body>
 </html>
 """
@@ -447,6 +513,8 @@ def main() -> Path:
         ler(JSON_SIMULACOES), ler(JSON_DADOS_REAIS), ler(JSON_AMOSTRA),
     )
     DASHBOARD.mkdir(parents=True, exist_ok=True)
+    # Plotly ao lado da página: o dashboard funciona sem internet (a fonte cai para a do sistema).
+    shutil.copyfile(Path(plotly.__file__).parent / "package_data" / "plotly.min.js", DASHBOARD / "plotly.min.js")
     caminho = DASHBOARD / "index.html"
     caminho.write_text(html, encoding="utf-8", newline="\n")
     print(f"Dashboard em {caminho}")

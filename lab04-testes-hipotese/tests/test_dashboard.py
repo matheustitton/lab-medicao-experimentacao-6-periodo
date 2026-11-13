@@ -98,3 +98,10 @@ def test_resumo_da_amostra():
     assert resumo["n"] == 4
     assert resumo["mediana"] == 2.0
     assert resumo["abaixo_1h"] == 0.25
+
+
+def test_tem_trilha_explorador_simulador_e_grafico_de_amostra(html):
+    assert 'class="trilha"' in html
+    assert 'id="grafico-explorador"' in html and 'id="simulador"' in html and 'id="g-amostra"' in html
+    assert '<script src="plotly.min.js"></script>' in html
+    assert html.count('class="tese"') == len(TITULOS_SECOES)
